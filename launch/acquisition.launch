@@ -1,9 +1,12 @@
 <launch>
   <!-- configure console output verbosity mode:debug_console.conf or std_console.conf -->
-  <env name="ROSCONSOLE_CONFIG_FILE" value="$(find spinnaker_sdk_camera_driver)/cfg/debug_console.conf"/>
+  <env name="ROSCONSOLE_CONFIG_FILE" value="$(find spinnaker_sdk_camera_driver)/cfg/std_console.conf"/>
 
   <!-- acquisition.lauynch -->
-  <arg name="binning"           default="1" doc="Binning for cameras, when changing from 2 to 1 cameras need to be unplugged and replugged"/>
+  <arg name="launch_prefix" default="" /> 
+  <!-- set to value="gdbserver localhost:10000" for remote debugging -->
+  <!-- for gdb which needs to be run by pressing R, 'xterm -e gdb with two - args ' -->
+  <arg name="binning"           default="2" doc="Binning for cameras, when changing from 2 to 1 cameras need to be unplugged and replugged"/>
   <arg name="color"             default="false"  doc="Should color images be used (only works on models that support color images)"/>
   <arg name="exp"               default="0" doc="Exposure setting for cameras"/>
   <arg name="frames"            default="3400"  doc="Numer of frames to save/view 0=ON"/>
@@ -21,8 +24,7 @@
   <arg name="config_file"       default="$(find spinnaker_sdk_camera_driver)/params/test_params.yaml" doc="File specifying the parameters of the camera_array"/>
 
   <!-- load the acquisition node -->
-  <node pkg="spinnaker_sdk_camera_driver" type="acquisition_node" name="acquisition_node" output="$(arg output)"
-  args="">
+  <node pkg="spinnaker_sdk_camera_driver" type="acquisition_node" name="acquisition_node" output="$(arg output)" launch-prefix="$(arg launch_prefix)" args="">
 
     <!-- load the acquisition node parameters file.  Note any parameters provided in this file will 
    override what is in the yaml file.  Thus use it to set parameters camer_array configuration params -->

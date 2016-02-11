@@ -32,7 +32,7 @@ find_package(catkin REQUIRED COMPONENTS
 ###
 # Find Packages
 find_package(OpenCV REQUIRED)
-find_package(LibUnwind REQUIRED)
+#find_package(LibUnwind REQUIRED)
 
 find_package(Boost REQUIRED)
 if(Boost_FOUND)
@@ -60,7 +60,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS roscpp std_msgs message_runtime
-  DEPENDS OpenCV LibUnwind
+  DEPENDS OpenCV #LibUnwind
 )
 
 include_directories(
@@ -69,12 +69,12 @@ include_directories(
   ${SPINNAKER_INCLUDE_DIR}
   ${OpenCV_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
-  ${LibUnwind_INCLUDE_DIRS}
+  #${LibUnwind_INCLUDE_DIRS}
 )
 
 link_directories( ${SPINNAKER_LIB_DIR} )
 
-set (LIBS ${LibUnwind_LIBRARIES} Spinnaker ${OpenCV_LIBS} ${Boost_GENERAL})
+set (LIBS Spinnaker ${OpenCV_LIBS} ${Boost_GENERAL})
 
 add_library (acquilib SHARED
   src/capture.cpp
