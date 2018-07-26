@@ -1,4 +1,4 @@
-# spinnaker-ros
+# spinnaker_camera_driver
 
 These are the ros drivers for running the Pt Grey (FLIR) cameras that use the Spinnaker SDK.  This code has been tested with various Point Grey Blackfly S (BFS) cameras. 
 
@@ -28,7 +28,7 @@ To install the spinnaker drivers
 ```bash
 mkdir -p ~/spinnaker_ws/src
 cd spinnaker_ws/src
-git clone https://github.com/neufieldrobotics/spinnaker-ros.git
+git clone https://github.com/neufieldrobotics/spinnaker_camera_driver.git
 cd ~/spinnaker_ws/
 catkin_make
 source ~/spinnaker_ws/devel/setup.bash
@@ -39,7 +39,7 @@ source ~/spinnaker_ws/devel/setup.bash
 
 Modify the `params/test_params.yaml` file replacing the cam-ids and master cam serial number to match your camera's serial number. Then run the code as:
 ```bash
-roslaunch spinnaker-ros acquisition.launch
+roslaunch spinnaker_camera_driver acquisition.launch
 # Test that the images are being published by running
 rqt_image_view
 ```
