@@ -112,7 +112,7 @@ acquisition::Capture::Capture():nh_(),nh_pvt_ ("~") {
     load_cameras();
  
     //initializing the ros publisher
-    acquisition_pub = nh_.advertise<spinnaker_camera_driver::spinnaker_image_names>("camera", 1000);
+    acquisition_pub = nh_.advertise<spinnaker_sdk_camera_driver::spinnaker_image_names>("camera", 1000);
 }
 
 void acquisition::Capture::load_cameras() {

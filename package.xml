@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package>
-  <name>spinnaker_camera_driver</name>
+  <name>spinnaker_sdk_camera_driver</name>
   <version>0.0.0</version>
   <description>Point Grey (FLIR) Spinnaker based camera driver (Blackfly S etc.)
 </description>
@@ -13,7 +13,7 @@
   
   <license>MIT</license>
 
-  <url type="website">http://wiki.ros.org/spinnaker_camera_driver</url>
+  <url type="website">http://wiki.ros.org/spinnaker_sdk_camera_driver</url>
 
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>roscpp</build_depend>
