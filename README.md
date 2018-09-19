@@ -10,7 +10,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 The pre-requisites for this repo include:
 * ros-kinetic-desktop-full
-* spinnaker 
+* spinnaker (download from [Pt Grey's website](https://www.ptgrey.com/support/downloads))
 * ros-kinetic-cv-bridge
 * ros-kinetic-image-transport
 * libunwind-dev
