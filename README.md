@@ -101,7 +101,11 @@ Specified as [fx  0 cx 0 fy cy 0  0  1]
 When using multiple cameras, we have found that the only way to keep images between different cameras synched is by using a master-slave setup using the GPIO connector. So this is the only way we support multicamera operation with this code. A general guide for multi camera setup is available at https://www.ptgrey.com/tan/11052, however note that we use a slightly different setup with our package.
 Refer to the `params/multi-cam_example.yaml` for an example on how to setup the configuration. You must specify a master_cam which must be one of the cameras in the cam_ids list. This master camera is the camera that is either explicitly software triggered by the code or triggered internally via a counter at a given frame rate. All the other cameras are triggered externally when the master camera triggers. In order to make this work, the wiring must be such that the external signal from the master camera **Line2** is connected to **Line3** on all slave cameras. To connect cameras in this way:
 * Connect the primary (master) camera's pin 3 (red wire, GPIO) to each secondary (slave) camera's pin 1 (green wire, GPI).
-* Connect the primary (master) camera's pin 6 (brown wire, ground) to each secondary (slave) camera's pin 6 (brown wire, ground).
+* Connect the primary (master) camera's pin 5 (blue wire, opto ground) and pin 6 (brown wire, ground) to each secondary (slave) camera's pin 6 (brown wire, ground).
+__GPIO Pinouts for Blackfly S__
+<img src="docs/images/bfs_GPIO.png" alt="GPIO Pinouts for Blackfly S" width="640" align="middle">  
+__GPIO Connections for Master/Slave config__
+<img src="docs/images/gpio_connections.png" alt="GPIO Connections for Master/Slave setup" width="360" align="middle">  
 
 ## License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
