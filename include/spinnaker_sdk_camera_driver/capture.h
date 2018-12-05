@@ -1,9 +1,9 @@
 #ifndef CAPTURE_HEADER
 #define CAPTURE_HEADER
 
-#include "std_include.h"
-#include "serialization.h"
-#include "camera.h"
+#include "spinnaker_sdk_camera_driver/std_include.h"
+#include "spinnaker_sdk_camera_driver/serialization.h"
+#include "spinnaker_sdk_camera_driver/camera.h"
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/filesystem.hpp>

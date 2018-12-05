@@ -1,7 +1,7 @@
 #ifndef UTILS_HEADER
 #define UTILS_HEADER
 
-#include "std_include.h"
+#include "spinnaker_sdk_camera_driver/std_include.h"
 
 using namespace Spinnaker;
 using namespace Spinnaker::GenApi;

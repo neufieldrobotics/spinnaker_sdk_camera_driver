@@ -1,4 +1,4 @@
-#include "camera.h"
+#include "spinnaker_sdk_camera_driver/camera.h"
 
 acquisition::Camera::~Camera() {
 
