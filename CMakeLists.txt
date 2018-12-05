@@ -3,6 +3,8 @@ project(spinnaker_sdk_camera_driver)
 
 add_compile_options(-std=c++11)
 
+set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
 ###
 # camera Acquisition specific 
 ###
@@ -30,7 +32,22 @@ find_package(catkin REQUIRED COMPONENTS
 # Find Packages
 find_package(OpenCV REQUIRED)
 
-find_package(Boost)
+find_package(OpenMP REQUIRED)
+if (OpenMP_FOUND)
+  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
+endif()
+
+find_package(LibUnwind REQUIRED)
+if(LIBUNWIND_FOUND)
+  set(LibUnwind_LIBRARIES ${LIBUNWIND_LIBRARIES})
+  set(LibUnwind_INCLUDE_DIR ${LIBUNWIND_INCLUDE_DIR})
+elseif(NOT LIBUNWIND_FOUND)
+  message("libunwind not found!")
+endif()
+
+find_package(Boost REQUIRED)
 if(Boost_FOUND)
   find_package ( Boost COMPONENTS filesystem system serialization REQUIRED )
   set(Boost_GENERAL ${Boost_LIBRARIES})
@@ -51,6 +68,7 @@ generate_messages(
 catkin_package(
   INCLUDE_DIRS include
   CATKIN_DEPENDS roscpp std_msgs message_runtime
+  DEPENDS OpenCV LibUnwind
 )
 
 include_directories(
@@ -59,11 +77,13 @@ include_directories(
   ${SPINNAKER_INCLUDE_DIR}
   ${OpenCV_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
+  ${OpenMP_INCLUDE_DIR}
+  ${LibUnwind_INCLUDE_DIR}
 )
 
 link_directories( ${SPINNAKER_LIB_DIR} )
 
-set (LIBS gomp unwind Spinnaker ${OpenCV_LIBS} ${Boost_GENERAL})
+set (LIBS ${OpenMP_LIBRARIES} ${LibUnwind_LIBRARIES} Spinnaker ${OpenCV_LIBS} ${Boost_GENERAL})
 
 add_library (acquilib SHARED
   src/capture.cpp
