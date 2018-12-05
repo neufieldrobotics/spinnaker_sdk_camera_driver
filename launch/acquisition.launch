@@ -22,7 +22,7 @@
 
   <!-- load the acquisition node -->
   <node pkg="spinnaker_sdk_camera_driver" type="acquisition_node" name="acquisition_node" output="$(arg output)"
-	args="">
+	args="" launch-prefix="xterm -e gdb --args">
 
     <!-- load the acquisition node parameters file.  Note any parameters provided in this file will 
 	 override what is in the yaml file.  Thus use it to set parameters camer_array configuration params -->
