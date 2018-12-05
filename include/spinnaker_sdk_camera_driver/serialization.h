@@ -1,7 +1,7 @@
 #ifndef SERIALIZATION_LIBRARY
 #define SERIALIZATION_LIBRARY
 
-#include "std_include.h"
+#include "spinnaker_sdk_camera_driver/std_include.h"
 
 #include <boost/serialization/split_free.hpp>
 #include <boost/serialization/vector.hpp>

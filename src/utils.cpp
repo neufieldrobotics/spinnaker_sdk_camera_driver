@@ -1,4 +1,4 @@
-#include "utils.h"
+#include "spinnaker_sdk_camera_driver/utils.h"
 
 using namespace Spinnaker;
 using namespace Spinnaker::GenApi;

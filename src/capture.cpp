@@ -1,4 +1,4 @@
-#include "capture.h"
+#include "spinnaker_sdk_camera_driver/capture.h"
 
 acquisition::Capture::~Capture(){
 
