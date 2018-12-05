@@ -9,7 +9,7 @@
 #include <boost/filesystem.hpp>
 
 #include "std_msgs/String.h"
-#include "spinnaker_sdk_camera_driver/spinnaker_image_names.h"
+#include "spinnaker_sdk_camera_driver/SpinnakerImageNames.h"
 
 #include <sstream>
 
@@ -129,7 +129,7 @@ namespace acquisition {
 		
 		vector<sensor_msgs::ImagePtr> img_msgs;
 		vector<sensor_msgs::CameraInfo> cam_info_msgs;
-		spinnaker_sdk_camera_driver::spinnaker_image_names mesg;
+		spinnaker_sdk_camera_driver::SpinnakerImageNames mesg;
 		
 		
 		boost::mutex queue_mutex_;
