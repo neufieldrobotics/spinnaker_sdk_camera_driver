@@ -12,6 +12,7 @@
 #include "spinnaker_sdk_camera_driver/SpinnakerImageNames.h"
 
 #include <sstream>
+#include <image_transport/image_transport.h>
 
 using namespace Spinnaker;
 using namespace Spinnaker::GenApi;
@@ -121,9 +122,12 @@ namespace acquisition {
         // ros variables
         ros::NodeHandle nh_;
         ros::NodeHandle nh_pvt_;
+        //image_transport::ImageTransport it_;
+        std::shared_ptr<image_transport::ImageTransport> it_;
 
         ros::Publisher acquisition_pub;
-        vector<ros::Publisher> camera_image_pubs;
+        
+        vector<image_transport::Publisher> camera_image_pubs;
         vector<ros::Publisher> camera_info_pubs;
 		
         vector<sensor_msgs::ImagePtr> img_msgs;

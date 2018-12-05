@@ -35,7 +35,7 @@ void handler(int i) {
     
 }
 
-acquisition::Capture::Capture():nh_(),nh_pvt_ ("~") {
+acquisition::Capture::Capture(): it_(nh_), nh_pvt_ ("~") {
 
     // struct sigaction sigIntHandler;
 
@@ -91,7 +91,7 @@ acquisition::Capture::Capture():nh_(),nh_pvt_ ("~") {
     achieved_time_ = 0;
         
     // decimation_ = 1;
-    
+  
     CAM_ = 0;
 
     // default flag values
@@ -133,6 +133,8 @@ void acquisition::Capture::load_cameras() {
 
     bool master_set = false;
     int cam_counter = 0;
+    
+    
     for (int j=0; j<cam_ids_.size(); j++) {
         bool current_cam_found=false;
         for (int i=0; i<numCameras_; i++) {
@@ -156,7 +158,7 @@ void acquisition::Capture::load_cameras() {
         
                 cams.push_back(cam);
                 
-                camera_image_pubs.push_back(nh_.advertise<sensor_msgs::Image>("camera_array/"+cam_names_[j]+"/image_raw", 1));
+                camera_image_pubs.push_back(it_->advertise("camera_array/"+cam_names_[j]+"/image_raw", 1));
                 camera_info_pubs.push_back(nh_.advertise<sensor_msgs::CameraInfo>("camera_array/"+cam_names_[j]+"/camera_info", 1));
                 img_msgs.push_back(sensor_msgs::ImagePtr());
                 
