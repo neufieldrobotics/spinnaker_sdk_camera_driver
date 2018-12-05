@@ -124,12 +124,12 @@ namespace acquisition {
         // ros variables
         ros::NodeHandle nh_;
         ros::NodeHandle nh_pvt_;
-        //image_transport::ImageTransport it_;
         image_transport::ImageTransport it_;
 
         ros::Publisher acquisition_pub;
 
         //vector<ros::Publisher> camera_image_pubs;
+
         vector<image_transport::Publisher> camera_image_pubs;
         vector<ros::Publisher> camera_info_pubs;
 		
