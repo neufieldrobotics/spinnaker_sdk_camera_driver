@@ -40,7 +40,7 @@ endif()
 
 add_message_files(
   FILES
-  spinnaker_image_names.msg
+  SpinnakerImageNames.msg
 )
 
 generate_messages(
