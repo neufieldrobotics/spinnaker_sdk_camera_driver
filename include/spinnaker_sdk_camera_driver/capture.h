@@ -126,7 +126,8 @@ namespace acquisition {
         std::shared_ptr<image_transport::ImageTransport> it_;
 
         ros::Publisher acquisition_pub;
-        
+
+        //vector<ros::Publisher> camera_image_pubs;
         vector<image_transport::Publisher> camera_image_pubs;
         vector<ros::Publisher> camera_info_pubs;
 		
