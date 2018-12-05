@@ -70,11 +70,11 @@ add_library (acquilib SHARED
   src/camera.cpp
 )
 
-add_dependencies(acquilib ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+add_dependencies(acquilib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(acquilib ${LIBS} ${catkin_LIBRARIES})
 
 add_executable (acquisition_node src/acquisition_node.cpp)
-add_dependencies(acquisition_node ${catkin_EXPORTED_TARGETS})
+add_dependencies(acquisition_node acquilib ${catkin_EXPORTED_TARGETS})
 target_link_libraries (acquisition_node acquilib ${LIBS} ${catkin_LIBRARIES})
 
 install(TARGETS acquilib acquisition_node
