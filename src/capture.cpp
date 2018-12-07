@@ -12,7 +12,7 @@ acquisition::Capture::~Capture(){
     end_acquisition();
     deinit_cameras();
 
-    // pCam = NULL;
+    // pCam = nullptr;
     
     ROS_INFO_STREAM("Clearing camList...");
     camList_.Clear();
@@ -147,7 +147,8 @@ void acquisition::Capture::load_cameras() {
                     MASTER_CAM_ = cam_counter;
                 }
                 
-                pResultImages_.push_back(NULL);
+                ImagePtr a_null;
+                pResultImages_.push_back(a_null);
 
                 Mat img;
                 frames_.push_back(img);
@@ -194,13 +195,11 @@ void acquisition::Capture::read_parameters() {
     
     if (nh_pvt_.getParam("save_path", path_)){
     if(path_.front() =='~'){
-        //ROS_INFO("Front is tilda");
         const char *homedir;
         if ((homedir = getenv("HOME")) == NULL)
             homedir = getpwuid(getuid())->pw_dir;
         std::string hd(homedir);
         path_.replace(0,1,hd);
-        //ROS_INFO_STREAM("Path ="<<path_);
     }
     ROS_INFO_STREAM("  Save path set via parameter to: " << path_);
     }
@@ -252,56 +251,56 @@ void acquisition::Capture::read_parameters() {
     
     if (nh_pvt_.getParam("utstamps", MASTER_TIMESTAMP_FOR_ALL_)){
         MASTER_TIMESTAMP_FOR_ALL_ = !MASTER_TIMESTAMP_FOR_ALL_;
-        ROS_INFO("  Unique time stamps for each camera: %d",!MASTER_TIMESTAMP_FOR_ALL_);
+        ROS_INFO("  Unique time stamps for each camera: %s",!MASTER_TIMESTAMP_FOR_ALL_?"true":"false");
     } 
-        else ROS_WARN("  'utstamps' Parameter not set, using default behavior utstamps=%d",!MASTER_TIMESTAMP_FOR_ALL_);
+        else ROS_WARN("  'utstamps' Parameter not set, using default behavior utstamps=%s",!MASTER_TIMESTAMP_FOR_ALL_?"true":"false");
     
     if (nh_pvt_.getParam("color", color_)) 
-        ROS_INFO("  color set to: %d",color_);
-        else ROS_WARN("  'color' Parameter not set, using default behavior color=%d",color_);
+        ROS_INFO("  color set to: %s",color_?"true":"false");
+        else ROS_WARN("  'color' Parameter not set, using default behavior color=%s",color_?"true":"false");
 
     if (nh_pvt_.getParam("to_ros", EXPORT_TO_ROS_)) 
-        ROS_INFO("  Exporting images to ROS: %d",EXPORT_TO_ROS_);
-        else ROS_WARN("  'to_ros' Parameter not set, using default behavior to_ros=%d",EXPORT_TO_ROS_);
+        ROS_INFO("  Exporting images to ROS: %s",EXPORT_TO_ROS_?"true":"false");
+        else ROS_WARN("  'to_ros' Parameter not set, using default behavior to_ros=%s",EXPORT_TO_ROS_?"true":"false");
 
     if (nh_pvt_.getParam("live", LIVE_)) 
-        ROS_INFO("  Showing live images setting: %d",LIVE_);
-        else ROS_WARN("  'live' Parameter not set, using default behavior live=%d",LIVE_);
+        ROS_INFO("  Showing live images setting: %s",LIVE_?"true":"false");
+        else ROS_WARN("  'live' Parameter not set, using default behavior live=%s",LIVE_?"true":"false");
 
     if (nh_pvt_.getParam("live_grid", GRID_VIEW_)){
         LIVE_=LIVE_|| GRID_VIEW_;
-        ROS_INFO("  Showing grid-style live images setting: %d",LIVE_);
-    } else ROS_WARN("  'live_grid' Parameter not set, using default behavior live_grid=%d",GRID_VIEW_);
+        ROS_INFO("  Showing grid-style live images setting: %s",GRID_VIEW_?"true":"false");
+    } else ROS_WARN("  'live_grid' Parameter not set, using default behavior live_grid=%s",GRID_VIEW_?"true":"false");
 
     if (nh_pvt_.getParam("max_rate_save", MAX_RATE_SAVE_)) 
-        ROS_INFO("  Max Rate Save Mode: %d",MAX_RATE_SAVE_);
-        else ROS_WARN("  'max_rate_save' Parameter not set, using default behavior max_rate_save=%d",MAX_RATE_SAVE_);
+        ROS_INFO("  Max Rate Save Mode: %s",MAX_RATE_SAVE_?"true":"false");
+        else ROS_WARN("  'max_rate_save' Parameter not set, using default behavior max_rate_save=%s",MAX_RATE_SAVE_?"true":"false");
 
     if (nh_pvt_.getParam("time", TIME_BENCHMARK_)) 
-        ROS_INFO("  Displaying timing details: %d",TIME_BENCHMARK_);
-        else ROS_WARN("  'time' Parameter not set, using default behavior time=%d",TIME_BENCHMARK_);
+        ROS_INFO("  Displaying timing details: %s",TIME_BENCHMARK_?"true":"false");
+        else ROS_WARN("  'time' Parameter not set, using default behavior time=%s",TIME_BENCHMARK_?"true":"false");
 
     if (nh_pvt_.getParam("skip", skip_num_)){
         if (skip_num_ >0) ROS_INFO("  No. of images to skip set to: %d",skip_num_);
         else {
             skip_num_=20;
-            ROS_WARN("  Provided 'skip'=%d is not valid, using default behavior, skip=%d",skip_num_);
+            ROS_WARN("  Provided 'skip' is not valid, using default behavior, skip=%d",skip_num_);
         }
     } else ROS_WARN("  'skip' Parameter not set, using default behavior: skip=%d",skip_num_);
 
     if (nh_pvt_.getParam("delay", init_delay_)){
-        if (init_delay_>=0) ROS_INFO("  Init sleep delays set to : %d sec",skip_num_);
+        if (init_delay_>=0) ROS_INFO("  Init sleep delays set to : %0.2f sec",init_delay_);
         else {
             init_delay_=1;
-            ROS_WARN("  Provided 'delay'=%d is not valid, using default behavior, delay=%d",init_delay_);
+            ROS_WARN("  Provided 'delay' is not valid, using default behavior, delay=%d",init_delay_);
         }
-    } else ROS_WARN("  'delay' Parameter not set, using default behavior: delay=%d",skip_num_);
+    } else ROS_WARN("  'delay' Parameter not set, using default behavior: delay=%d",init_delay_);
 
     if (nh_pvt_.getParam("fps", master_fps_)){
-        if (master_fps_>=0) ROS_INFO("  Master cam fps set to : %0.2",master_fps_);
+        if (master_fps_>=0) ROS_INFO("  Master cam fps set to : %0.2f",master_fps_);
         else {
             master_fps_=20;
-            ROS_WARN("  Provided 'fps'=%0.2f is not valid, using default behavior, fps=%d",master_fps_);
+            ROS_WARN("  Provided 'fps' is not valid, using default behavior, fps=%0.2f",master_fps_);
         }
     }
         else ROS_WARN("  'fps' Parameter not set, using default behavior: fps=%0.2f",master_fps_);
@@ -345,7 +344,7 @@ void acquisition::Capture::read_parameters() {
             if (nframes_>0){
                 FIXED_NUM_FRAMES_ = true;
                 ROS_INFO("    Number of frames to be recorded: %d", nframes_ );
-            }else ROS_INFO("    Frames will be recorded until user termination", nframes_ );
+            }else ROS_INFO("    Frames will be recorded until user termination");
         }else ROS_WARN("    'frames' Parameter not set, using defult behavior, frames will be recorded until user termination");
     }
 
@@ -728,7 +727,7 @@ void acquisition::Capture::run_soft_trig() {
                 } else {
                     imshow("Acquisition", frames_[CAM_]);
                     char title[50];
-                    sprintf(title, "cam # = %d, cam ID = %s, cam name = %s", CAM_, cam_ids_[CAM_], cam_names_[CAM_]);
+                    sprintf(title, "cam # = %d, cam ID = %s, cam name = %s", CAM_, cam_ids_[CAM_].c_str(), cam_names_[CAM_].c_str());
                     displayOverlay("Acquisition", title);
                 }
             }
@@ -814,8 +813,11 @@ void acquisition::Capture::run_soft_trig() {
 
         }
     }
+    catch(const std::exception &e){
+        ROS_FATAL_STREAM("Excption: "<<e.what());
+    }
     catch(...){
-        ROS_FATAL_STREAM("Some exception occured. \v Exiting gracefully, \n  possible reason could be Camera Disconnection...");
+        ROS_FATAL_STREAM("Some unknown exception occured. \v Exiting gracefully, \n  possible reason could be Camera Disconnection...");
     }
 }
 
@@ -1003,7 +1005,6 @@ std::string acquisition::Capture::todays_date()
     char out[9];
     std::time_t t=std::time(NULL);
     std::strftime(out, sizeof(out), "%Y%m%d", std::localtime(&t));
-    std::cout<<out;
     std::string td(out);
     return td;
 }
