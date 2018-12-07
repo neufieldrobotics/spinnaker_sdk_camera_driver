@@ -31,14 +31,6 @@ find_package(catkin REQUIRED COMPONENTS
 ###
 # Find Packages
 find_package(OpenCV REQUIRED)
-
-find_package(OpenMP REQUIRED)
-if (OpenMP_FOUND)
-  set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-  set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
-endif()
-
 find_package(LibUnwind REQUIRED)
 
 find_package(Boost REQUIRED)
@@ -71,13 +63,12 @@ include_directories(
   ${SPINNAKER_INCLUDE_DIR}
   ${OpenCV_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
-  ${OpenMP_INCLUDE_DIR}
   ${LibUnwind_INCLUDE_DIRS}
 )
 
 link_directories( ${SPINNAKER_LIB_DIR} )
 
-set (LIBS ${OpenMP_LIBRARIES} ${LibUnwind_LIBRARIES} Spinnaker ${OpenCV_LIBS} ${Boost_GENERAL})
+set (LIBS ${LibUnwind_LIBRARIES} Spinnaker ${OpenCV_LIBS} ${Boost_GENERAL})
 
 add_library (acquilib SHARED
   src/capture.cpp
