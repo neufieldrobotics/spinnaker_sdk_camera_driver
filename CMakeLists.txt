@@ -40,12 +40,6 @@ if (OpenMP_FOUND)
 endif()
 
 find_package(LibUnwind REQUIRED)
-if(LIBUNWIND_FOUND)
-  set(LibUnwind_LIBRARIES ${LIBUNWIND_LIBRARIES})
-  set(LibUnwind_INCLUDE_DIR ${LIBUNWIND_INCLUDE_DIR})
-elseif(NOT LIBUNWIND_FOUND)
-  message("libunwind not found!")
-endif()
 
 find_package(Boost REQUIRED)
 if(Boost_FOUND)
@@ -78,7 +72,7 @@ include_directories(
   ${OpenCV_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIR}
   ${OpenMP_INCLUDE_DIR}
-  ${LibUnwind_INCLUDE_DIR}
+  ${LibUnwind_INCLUDE_DIRS}
 )
 
 link_directories( ${SPINNAKER_LIB_DIR} )
