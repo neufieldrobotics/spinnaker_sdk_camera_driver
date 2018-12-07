@@ -289,7 +289,7 @@ void acquisition::Capture::read_parameters() {
     } else ROS_WARN("  'skip' Parameter not set, using default behavior: skip=%d",skip_num_);
 
     if (nh_pvt_.getParam("delay", init_delay_)){
-        if (init_delay_>=0) ROS_INFO("  Init sleep delays set to : %0.2f sec",init_delay_);
+        if (init_delay_>=0) ROS_INFO("  Init sleep delays set to : %d sec",init_delay_);
         else {
             init_delay_=1;
             ROS_WARN("  Provided 'delay' is not valid, using default behavior, delay=%d",init_delay_);
