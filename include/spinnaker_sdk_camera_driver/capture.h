@@ -84,7 +84,7 @@ namespace acquisition {
         double grab_time_, save_time_, toMat_time_, save_mat_time_, export_to_ROS_time_, achieved_time_;
 
         int nframes_;
-        int init_delay_;
+        float init_delay_;
         int skip_num_;
         float master_fps_;
         int binning_;

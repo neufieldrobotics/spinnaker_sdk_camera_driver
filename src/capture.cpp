@@ -76,7 +76,7 @@ acquisition::Capture::Capture():nh_(),nh_pvt_ ("~") {
     FIXED_NUM_FRAMES_ = false;
     MAX_RATE_SAVE_ = false;
     skip_num_ = 20; 
-    init_delay_ = 1; 
+    init_delay_ = 1.0; 
     master_fps_ = 20.0;
     binning_ = 1;
     todays_date_ = todays_date();
@@ -289,12 +289,12 @@ void acquisition::Capture::read_parameters() {
     } else ROS_WARN("  'skip' Parameter not set, using default behavior: skip=%d",skip_num_);
 
     if (nh_pvt_.getParam("delay", init_delay_)){
-        if (init_delay_>=0) ROS_INFO("  Init sleep delays set to : %d sec",init_delay_);
+        if (init_delay_>=0) ROS_INFO("  Init sleep delays set to : %f sec",init_delay_);
         else {
-            init_delay_=1;
-            ROS_WARN("  Provided 'delay' is not valid, using default behavior, delay=%d",init_delay_);
+            init_delay_=1.0;
+            ROS_WARN("  Provided 'delay' is not valid, using default behavior, delay=%f",init_delay_);
         }
-    } else ROS_WARN("  'delay' Parameter not set, using default behavior: delay=%d",init_delay_);
+    } else ROS_WARN("  'delay' Parameter not set, using default behavior: delay=%f",init_delay_);
 
     if (nh_pvt_.getParam("fps", master_fps_)){
         if (master_fps_>=0) ROS_INFO("  Master cam fps set to : %0.2f",master_fps_);
