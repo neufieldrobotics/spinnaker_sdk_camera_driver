@@ -27,6 +27,7 @@ acquisition::Camera::Camera(CameraPtr pCam) {
 void acquisition::Camera::init() {
 
     pCam_->Init();
+    pCam_ = NULL;
     
 }
 
