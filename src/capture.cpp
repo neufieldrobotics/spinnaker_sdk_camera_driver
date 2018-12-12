@@ -1,4 +1,4 @@
-#include "capture.h"
+#include "spinnaker_sdk_camera_driver/capture.h"
 
 acquisition::Capture::~Capture(){
 
@@ -112,7 +112,7 @@ acquisition::Capture::Capture():nh_(),nh_pvt_ ("~") {
     load_cameras();
  
     //initializing the ros publisher
-    acquisition_pub = nh_.advertise<spinnaker_sdk_camera_driver::spinnaker_image_names>("camera", 1000);
+    acquisition_pub = nh_.advertise<spinnaker_sdk_camera_driver::SpinnakerImageNames>("camera", 1000);
 }
 
 void acquisition::Capture::load_cameras() {
@@ -292,9 +292,9 @@ void acquisition::Capture::read_parameters() {
         if (init_delay_>=0) ROS_INFO("  Init sleep delays set to : %0.2f sec",init_delay_);
         else {
             init_delay_=1;
-            ROS_WARN("  Provided 'delay' is not valid, using default behavior, delay=%d",init_delay_);
+            ROS_WARN("  Provided 'delay' is not valid, using default behavior, delay=%f",init_delay_);
         }
-    } else ROS_WARN("  'delay' Parameter not set, using default behavior: delay=%d",init_delay_);
+    } else ROS_WARN("  'delay' Parameter not set, using default behavior: delay=%f",init_delay_);
 
     if (nh_pvt_.getParam("fps", master_fps_)){
         if (master_fps_>=0) ROS_INFO("  Master cam fps set to : %0.2f",master_fps_);
