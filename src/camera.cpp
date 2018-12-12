@@ -3,6 +3,7 @@
 acquisition::Camera::~Camera() {
 
     timestamp_ = 0;
+    pCam_ = NULL;
 
 }
 
@@ -27,7 +28,6 @@ acquisition::Camera::Camera(CameraPtr pCam) {
 void acquisition::Camera::init() {
 
     pCam_->Init();
-    pCam_ = NULL;
     
 }
 
