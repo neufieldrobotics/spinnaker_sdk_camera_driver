@@ -162,19 +162,32 @@ void acquisition::Capture::load_cameras() {
                 
                 if (PUBLISH_CAM_INFO_){
                     sensor_msgs::CameraInfo ci_msg;
-                    
-                    ci_msg.height = 1024;
-                    ci_msg.width = 1280;
-                    ci_msg.distortion_model = "plumb_bob";
-                    ci_msg.D = distortion_coeff_vec_[j];
+                    int image_width = 0;
+                    int image_height = 0;
+                    std::string distortion_model = ""; 
+                    nh_pvt_.getParam("image_height", image_height);
+                    nh_pvt_.getParam("image_width", image_width);
+                    nh_pvt_.getParam("distortion_model", distortion_model);
+
+                    ci_msg.header.frame_id = "cam_"+to_string(j)+"_optical_frame";
+                    ci_msg.width = image_width;
+                    ci_msg.height = image_height;
+                    ci_msg.distortion_model = distortion_model;
                     ci_msg.binning_x = binning_;
                     ci_msg.binning_y = binning_;
+                    
+                    ci_msg.D = distortion_coeff_vec_[j];
                     for (int count = 0; count<intrinsic_coeff_vec_[j].size();count++)
                         ci_msg.K[count] = intrinsic_coeff_vec_[j][count];
-                    ci_msg.header.frame_id = "cam_"+to_string(j)+"_optical_frame";
-                    ci_msg.P = {intrinsic_coeff_vec_[j][0], intrinsic_coeff_vec_[j][1],intrinsic_coeff_vec_[j][2], 0,
-                                intrinsic_coeff_vec_[j][3],intrinsic_coeff_vec_[j][4],intrinsic_coeff_vec_[j][5],0,
-                                intrinsic_coeff_vec_[j][6],intrinsic_coeff_vec_[j][7],intrinsic_coeff_vec_[j][8],0};
+                    
+                    if (!rect_coeff_vec_.empty())
+                        ci_msg.R = {rect_coeff_vec_[j][0], rect_coeff_vec_[j][1], rect_coeff_vec_[j][2],
+                                    rect_coeff_vec_[j][3], rect_coeff_vec_[j][4], rect_coeff_vec_[j][5],
+                                    rect_coeff_vec_[j][6], rect_coeff_vec_[j][7], rect_coeff_vec_[j][8]};
+                    if (!proj_coeff_vec_.empty())
+                        ci_msg.P = {proj_coeff_vec_[j][0], proj_coeff_vec_[j][1], proj_coeff_vec_[j][2], proj_coeff_vec_[j][3],
+                                    proj_coeff_vec_[j][4], proj_coeff_vec_[j][5], proj_coeff_vec_[j][6], proj_coeff_vec_[j][7],
+                                    proj_coeff_vec_[j][8], proj_coeff_vec_[j][9], proj_coeff_vec_[j][10], proj_coeff_vec_[j][11]};
 
                     cam_info_msgs.push_back(ci_msg);
                 }
@@ -384,6 +397,42 @@ void acquisition::Capture::read_parameters() {
             distortion_coeff_vec_.push_back(distort);
             ROS_INFO_STREAM("   "<< distort_str );
             distort_list_provided = true;
+        }
+    }
+    
+    XmlRpc::XmlRpcValue rect_list;
+
+    if (nh_pvt_.getParam("rectification_coeffs", rect_list)) {
+        ROS_INFO("  Camera Rectification Paramters:");
+        ROS_ASSERT_MSG(rect_list.size() == num_ids,"If rectification_coeffs are provided, they should be the same number as cam_ids and should correspond in order!");
+        for (int i=0; i<rect_list.size(); i++){
+            std::vector<double> rect;
+            String rect_str="";
+            for (int j=0; j<rect_list[i].size(); j++){
+                ROS_ASSERT_MSG(rect_list[i][j].getType()== XmlRpc::XmlRpcValue::TypeDouble,"Make sure all numbers are entered as doubles eg. 0.0 or 1.1");
+                rect.push_back(static_cast<double>(rect_list[i][j]));
+                rect_str = rect_str +to_string(rect[j])+" ";
+            }
+            rect_coeff_vec_.push_back(rect);
+            ROS_INFO_STREAM("   "<< rect_str );
+        }
+    }
+    
+    XmlRpc::XmlRpcValue proj_list;
+
+    if (nh_pvt_.getParam("projection_coeffs", proj_list)) {
+        ROS_INFO("  Camera Projection Paramters:");
+        ROS_ASSERT_MSG(proj_list.size() == num_ids,"If projection_coeffs are provided, they should be the same number as cam_ids and should correspond in order!");
+        for (int i=0; i<proj_list.size(); i++){
+            std::vector<double> proj;
+            String proj_str="";
+            for (int j=0; j<proj_list[i].size(); j++){
+                ROS_ASSERT_MSG(proj_list[i][j].getType()== XmlRpc::XmlRpcValue::TypeDouble,"Make sure all numbers are entered as doubles eg. 0.0 or 1.1");
+                proj.push_back(static_cast<double>(proj_list[i][j]));
+                proj_str = proj_str +to_string(proj[j])+" ";
+            }
+            proj_coeff_vec_.push_back(proj);
+            ROS_INFO_STREAM("   "<< proj_str );
         }
     }
 
