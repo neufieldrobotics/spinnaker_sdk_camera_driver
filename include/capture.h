@@ -123,21 +123,18 @@ namespace acquisition {
         ros::NodeHandle nh_;
         ros::NodeHandle nh_pvt_;
         //image_transport::ImageTransport it_;
-        std::shared_ptr<image_transport::ImageTransport> it_;
+        image_transport::ImageTransport it_;
 
         ros::Publisher acquisition_pub;
-        
-		vector<image_transport::Publisher> camera_image_pubs;
-		vector<ros::Publisher> camera_info_pubs;
+
+        //vector<ros::Publisher> camera_image_pubs;
+        vector<image_transport::Publisher> camera_image_pubs;
+        vector<ros::Publisher> camera_info_pubs;
 		
-		
-		vector<sensor_msgs::ImagePtr> img_msgs;
-		vector<sensor_msgs::CameraInfo> cam_info_msgs;
-		spinnaker_sdk_camera_driver::spinnaker_image_names mesg;
-		
-		
-		boost::mutex queue_mutex_;
-   
+        vector<sensor_msgs::ImagePtr> img_msgs;
+        vector<sensor_msgs::CameraInfo> cam_info_msgs;
+        spinnaker_sdk_camera_driver::spinnaker_image_names mesg;
+        boost::mutex queue_mutex_;  
     };
 
 }
