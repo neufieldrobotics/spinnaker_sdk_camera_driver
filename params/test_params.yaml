@@ -4,7 +4,7 @@ cam_aliases:
 - cam0
 master_cam: 17197559
 skip: 20
-delay: 1
+delay: 1.0
 
 # Assign all the follwing via launch file to prevent confusion and conflict
 
