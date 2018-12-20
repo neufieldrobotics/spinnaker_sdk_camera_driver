@@ -22,6 +22,7 @@ find_package(catkin REQUIRED COMPONENTS
   cv_bridge
   image_transport
   sensor_msgs
+  dynamic_reconfigure
 )
 
 #find_package(PCL REQUIRED)
@@ -44,6 +45,11 @@ endif()
 add_message_files(
   FILES
   SpinnakerImageNames.msg
+)
+
+generate_dynamic_reconfigure_options(
+  cfg/spinnaker_cam.cfg
+
 )
 
 generate_messages(
@@ -75,11 +81,11 @@ add_library (acquilib SHARED
   src/camera.cpp
 )
 
-add_dependencies(acquilib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(acquilib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 target_link_libraries(acquilib ${LIBS} ${catkin_LIBRARIES})
 
 add_executable (acquisition_node src/acquisition_node.cpp)
-add_dependencies(acquisition_node acquilib ${catkin_EXPORTED_TARGETS})
+add_dependencies(acquisition_node acquilib ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 target_link_libraries (acquisition_node acquilib ${LIBS} ${catkin_LIBRARIES})
 
 install(TARGETS acquilib acquisition_node

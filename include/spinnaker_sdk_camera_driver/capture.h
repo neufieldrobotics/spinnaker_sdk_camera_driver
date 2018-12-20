@@ -7,8 +7,13 @@
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/filesystem.hpp>
-
+//ROS
+#include "std_msgs/Float64.h"
 #include "std_msgs/String.h"
+//Dynamic reconfigure
+#include <dynamic_reconfigure/server.h>
+#include <spinnaker_sdk_camera_driver/spinnaker_camConfig.h>
+
 #include "spinnaker_sdk_camera_driver/SpinnakerImageNames.h"
 
 #include <sstream>
@@ -59,6 +64,7 @@ namespace acquisition {
         void get_mat_images();
         void update_grid();
         void export_to_ROS();
+        void dynamicReconfigureCallback(spinnaker_sdk_camera_driver::spinnaker_camConfig &config, uint32_t level);
 
         float mem_usage();
     
@@ -124,9 +130,9 @@ namespace acquisition {
         ros::NodeHandle nh_pvt_;
         //image_transport::ImageTransport it_;
         image_transport::ImageTransport it_;
+        dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig> server;
 
         ros::Publisher acquisition_pub;
-
         //vector<ros::Publisher> camera_image_pubs;
         vector<image_transport::Publisher> camera_image_pubs;
         vector<ros::Publisher> camera_info_pubs;
