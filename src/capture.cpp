@@ -113,6 +113,12 @@ acquisition::Capture::Capture(): it_(nh_), nh_pvt_ ("~") {
  
     //initializing the ros publisher
     acquisition_pub = nh_.advertise<spinnaker_sdk_camera_driver::SpinnakerImageNames>("camera", 1000);
+    //dynamic reconfigure
+    //dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig> server;
+    dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig>::CallbackType f;
+
+    f = boost::bind(&acquisition::Capture::dynamicReconfigureCallback,this, _1, _2);
+    server.setCallback(f);
 }
 
 void acquisition::Capture::load_cameras() {
@@ -819,7 +825,7 @@ void acquisition::Capture::run_soft_trig() {
             }
 
             double disp_time_ = ros::Time::now().toSec() - t;
-            
+
             // Call update functions
             if (!MANUAL_TRIGGER_) {
                 cams[MASTER_CAM_].trigger();
@@ -844,7 +850,7 @@ void acquisition::Capture::run_soft_trig() {
             }
             
             if (EXPORT_TO_ROS_) export_to_ROS();
-            
+            //cams[MASTER_CAM_].targetGreyValueTest();
             // ros publishing messages
             acquisition_pub.publish(mesg);
 
@@ -1059,4 +1065,21 @@ std::string acquisition::Capture::todays_date()
     std::strftime(out, sizeof(out), "%Y%m%d", std::localtime(&t));
     std::string td(out);
     return td;
+}
+
+void acquisition::Capture::dynamicReconfigureCallback(spinnaker_sdk_camera_driver::spinnaker_camConfig &config, uint32_t level){
+    ROS_INFO_STREAM("Dynamic Reconfigure: Target grey value : " << config.target_grey_val <<"Exposure "<<config.exposure_time);
+    ROS_INFO_STREAM("Dynamic Reconfigure: Level : " << level);
+
+    if(level == 1){
+        cams[MASTER_CAM_].setEnumValue("AutoExposureTargetGreyValueAuto", "Off");
+        cams[MASTER_CAM_].setFloatValue("AutoExposureTargetGreyValue", config.target_grey_val);
+    }
+    else if (level == 3 && config.exposure_time > 0){
+        cams[MASTER_CAM_].setEnumValue("ExposureAuto", "Off");
+        cams[MASTER_CAM_].setEnumValue("ExposureMode", "Timed");
+        cams[MASTER_CAM_].setFloatValue("ExposureTime", config.exposure_time);
+    }
+    
+
 }

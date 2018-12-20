@@ -301,6 +301,19 @@ void acquisition::Camera::trigger() {
     
 }
 
+
+void acquisition::Camera::targetGreyValueTest() {
+    CFloatPtr ptrExpTest =pCam_->GetNodeMap().GetNode("AutoExposureTargetGreyValue");
+    //CFloatPtr ptrExpTest=pCam_->GetNodeMap().GetNode("ExposureTime");
+    if (!IsAvailable(ptrExpTest) || !IsReadable(ptrExpTest)){
+        ROS_FATAL_STREAM("Unable to set exposure " << "). Aborting..." << endl << endl);
+        return ;
+    }
+    ptrExpTest->SetValue(90.0);
+    ROS_INFO_STREAM("target grey mode Time: "<<ptrExpTest->GetValue()<<endl);
+
+}
+
 void acquisition::Camera::exposureTest() {
     CFloatPtr ptrExpTest=pCam_->GetNodeMap().GetNode("ExposureTime");
     if (!IsAvailable(ptrExpTest) || !IsReadable(ptrExpTest)){
