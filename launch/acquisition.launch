@@ -3,7 +3,7 @@
   <env name="ROSCONSOLE_CONFIG_FILE" value="$(find spinnaker_sdk_camera_driver)/cfg/std_console.conf"/>
 
   <!-- acquisition.lauynch -->
-  <arg name="binning"		    default="2"	doc="Binning for cameras, when changing from 2 to 1 cameras need to be unplugged and replugged"/>
+  <arg name="binning"		    default="1"	doc="Binning for cameras, when changing from 2 to 1 cameras need to be unplugged and replugged"/>
   <arg name="color"		        default="false"	doc="Should color images be used (only works on models that support color images)"/>
   <arg name="exp"               default="0"	doc="Exposure setting for cameras"/>
   <arg name="frames"            default="3400"	doc="Numer of frames to save/view 0=ON"/>

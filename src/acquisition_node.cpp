@@ -11,7 +11,10 @@ int main(int argc, char** argv) {
 
     // Initializing the ros node
     ros::init(argc, argv, "acquisition_node");
-    
+    //spinners
+    ros::AsyncSpinner spinner(0); // Use max cores possible for mt
+    spinner.start();
+
     acquisition::Capture cobj;
     cobj.init_array();
     cobj.run();

@@ -35,7 +35,7 @@ void handler(int i) {
     
 }
 
-acquisition::Capture::Capture():nh_(),nh_pvt_ ("~") {
+acquisition::Capture::Capture(): it_(nh_), nh_pvt_ ("~") {
 
     // struct sigaction sigIntHandler;
 
@@ -91,7 +91,7 @@ acquisition::Capture::Capture():nh_(),nh_pvt_ ("~") {
     achieved_time_ = 0;
         
     // decimation_ = 1;
-    
+  
     CAM_ = 0;
 
     // default flag values
@@ -113,6 +113,12 @@ acquisition::Capture::Capture():nh_(),nh_pvt_ ("~") {
  
     //initializing the ros publisher
     acquisition_pub = nh_.advertise<spinnaker_sdk_camera_driver::SpinnakerImageNames>("camera", 1000);
+    //dynamic reconfigure
+    //dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig> server;
+    dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig>::CallbackType f;
+
+    f = boost::bind(&acquisition::Capture::dynamicReconfigureCallback,this, _1, _2);
+    server.setCallback(f);
 }
 
 void acquisition::Capture::load_cameras() {
@@ -133,6 +139,8 @@ void acquisition::Capture::load_cameras() {
 
     bool master_set = false;
     int cam_counter = 0;
+    
+    
     for (int j=0; j<cam_ids_.size(); j++) {
         bool current_cam_found=false;
         for (int i=0; i<numCameras_; i++) {
@@ -156,26 +164,24 @@ void acquisition::Capture::load_cameras() {
         
                 cams.push_back(cam);
                 
-                camera_image_pubs.push_back(nh_.advertise<sensor_msgs::Image>("camera_array/"+cam_names_[j]+"/image_raw", 1));
-                camera_info_pubs.push_back(nh_.advertise<sensor_msgs::CameraInfo>("camera_array/"+cam_names_[j]+"/camera_info", 1));
-                img_msgs.push_back(sensor_msgs::ImagePtr());
-                
-                if (PUBLISH_CAM_INFO_){
-                    sensor_msgs::CameraInfo ci_msg;
-                    
-                    ci_msg.height = 1024;
-                    ci_msg.width = 1280;
-                    ci_msg.distortion_model = "plumb_bob";
-                    ci_msg.D = distortion_coeff_vec_[j];
-                    ci_msg.binning_x = binning_;
-                    ci_msg.binning_y = binning_;
-                    for (int count = 0; count<intrinsic_coeff_vec_[j].size();count++)
-                        ci_msg.K[count] = intrinsic_coeff_vec_[j][count];
-                    ci_msg.header.frame_id = "cam_"+to_string(j)+"_optical_frame";
-                    ci_msg.P = {intrinsic_coeff_vec_[j][0], intrinsic_coeff_vec_[j][1],intrinsic_coeff_vec_[j][2], 0,
-                                intrinsic_coeff_vec_[j][3],intrinsic_coeff_vec_[j][4],intrinsic_coeff_vec_[j][5],0,
-                                intrinsic_coeff_vec_[j][6],intrinsic_coeff_vec_[j][7],intrinsic_coeff_vec_[j][8],0};
+                camera_image_pubs.push_back(it_.advertiseCamera("camera_array/"+cam_names_[j]+"/image_raw", 1));
+                //camera_info_pubs.push_back(nh_.advertise<sensor_msgs::CameraInfo>("camera_array/"+cam_names_[j]+"/camera_info", 1));
 
+                img_msgs.push_back(sensor_msgs::ImagePtr());
+                if (PUBLISH_CAM_INFO_){
+                    sensor_msgs::CameraInfoPtr ci_msg(new sensor_msgs::CameraInfo());
+                    ci_msg->height = 1024;
+                    ci_msg->width = 1280;
+                    ci_msg->distortion_model = "plumb_bob";
+                    ci_msg->D = distortion_coeff_vec_[j];
+                    ci_msg->binning_x = binning_;
+                    ci_msg->binning_y = binning_;
+                    for (int count = 0; count<intrinsic_coeff_vec_[j].size();count++)
+                        ci_msg->K[count] = intrinsic_coeff_vec_[j][count];
+                    ci_msg->header.frame_id = "cam_"+to_string(j)+"_optical_frame";
+                    ci_msg->P = {intrinsic_coeff_vec_[j][0], intrinsic_coeff_vec_[j][1], intrinsic_coeff_vec_[j][2], 0,
+                                 intrinsic_coeff_vec_[j][3], intrinsic_coeff_vec_[j][4], intrinsic_coeff_vec_[j][5], 0,
+                                 intrinsic_coeff_vec_[j][6], intrinsic_coeff_vec_[j][7], intrinsic_coeff_vec_[j][8], 0};
                     cam_info_msgs.push_back(ci_msg);
                 }
                 cam_counter++;
@@ -390,8 +396,8 @@ void acquisition::Capture::read_parameters() {
     PUBLISH_CAM_INFO_ = intrinsics_list_provided && distort_list_provided;
     if (PUBLISH_CAM_INFO_)
         ROS_INFO("  Camera coeffs provided, camera info messges will be published.");
-        else
-            ROS_INFO("  Camera coeffs not provided correctly, camera info messges will not be published.");
+    else
+        ROS_INFO("  Camera coeffs not provided correctly, camera info messges will not be published.");
 
 //    ROS_ASSERT_MSG(my_list.getType()
 //    int num_ids = cam_id_vec.size();
@@ -599,15 +605,19 @@ void acquisition::Capture::export_to_ROS() {
 
         if(color_)
             img_msgs[i]=cv_bridge::CvImage(img_msg_header, "bgr8", frames_[i]).toImageMsg();
-            else
-                img_msgs[i]=cv_bridge::CvImage(img_msg_header, "mono8", frames_[i]).toImageMsg();
+        else
+            img_msgs[i]=cv_bridge::CvImage(img_msg_header, "mono8", frames_[i]).toImageMsg();
 
-        camera_image_pubs[i].publish(img_msgs[i]);
-
+        if (PUBLISH_CAM_INFO_){
+            cam_info_msgs[i]->header.stamp = mesg.header.stamp;
+        }
+        camera_image_pubs[i].publish(img_msgs[i],cam_info_msgs[i]);
+    /*
         if (PUBLISH_CAM_INFO_){
         cam_info_msgs[i].header.stamp = mesg.header.stamp;
         camera_info_pubs[i].publish(cam_info_msgs[i]);
         }
+    */
     }
     export_to_ROS_time_ = ros::Time::now().toSec()-t;;
 }
@@ -767,7 +777,7 @@ void acquisition::Capture::run_soft_trig() {
             }
 
             double disp_time_ = ros::Time::now().toSec() - t;
-            
+
             // Call update functions
             if (!MANUAL_TRIGGER_) {
                 cams[MASTER_CAM_].trigger();
@@ -792,7 +802,7 @@ void acquisition::Capture::run_soft_trig() {
             }
             
             if (EXPORT_TO_ROS_) export_to_ROS();
-            
+            //cams[MASTER_CAM_].targetGreyValueTest();
             // ros publishing messages
             acquisition_pub.publish(mesg);
 
@@ -1007,4 +1017,21 @@ std::string acquisition::Capture::todays_date()
     std::strftime(out, sizeof(out), "%Y%m%d", std::localtime(&t));
     std::string td(out);
     return td;
+}
+
+void acquisition::Capture::dynamicReconfigureCallback(spinnaker_sdk_camera_driver::spinnaker_camConfig &config, uint32_t level){
+    ROS_INFO_STREAM("Dynamic Reconfigure: Target grey value : " << config.target_grey_val <<"Exposure "<<config.exposure_time);
+    ROS_INFO_STREAM("Dynamic Reconfigure: Level : " << level);
+
+    if(level == 1){
+        cams[MASTER_CAM_].setEnumValue("AutoExposureTargetGreyValueAuto", "Off");
+        cams[MASTER_CAM_].setFloatValue("AutoExposureTargetGreyValue", config.target_grey_val);
+    }
+    else if (level == 3 && config.exposure_time > 0){
+        cams[MASTER_CAM_].setEnumValue("ExposureAuto", "Off");
+        cams[MASTER_CAM_].setEnumValue("ExposureMode", "Timed");
+        cams[MASTER_CAM_].setFloatValue("ExposureTime", config.exposure_time);
+    }
+    
+
 }
