@@ -75,6 +75,8 @@ namespace acquisition {
         vector< vector<Mat> > mem_frames_;
         vector<vector<double>> intrinsic_coeff_vec_;
         vector<vector<double>> distortion_coeff_vec_;
+        vector<vector<double>> rect_coeff_vec_;
+        vector<vector<double>> proj_coeff_vec_;
         vector<string> imageNames;
            
         string path_;
