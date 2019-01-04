@@ -40,8 +40,8 @@ void acquisition::Camera::deinit() {
 ImagePtr acquisition::Camera::grab_frame() {
 
     ImagePtr pResultImage = pCam_->GetNextImage(GET_NEXT_IMAGE_TIMEOUT_);
-
     // Check if the Image is complete
+
     if (pResultImage->IsIncomplete()) {
         
         ROS_WARN_STREAM("Image incomplete with image status " << pResultImage->GetImageStatus() << "!");
@@ -60,11 +60,9 @@ ImagePtr acquisition::Camera::grab_frame() {
         }
 
     }
-    
+
     ROS_DEBUG_STREAM("Grabbed frame from camera " << get_id() << " with timestamp " << timestamp_*1000);
-    
-    return pResultImage;
-    
+    return pResultImage;    
 }
 
 // Returns last timestamp
@@ -96,19 +94,16 @@ Mat acquisition::Camera::convert_to_mat(ImagePtr pImage) {
         convertedImage = pImage->Convert(PixelFormat_BGR8); //, NEAREST_NEIGHBOR);
     else
 		convertedImage = pImage->Convert(PixelFormat_Mono8); //, NEAREST_NEIGHBOR);
-		
     unsigned int XPadding = convertedImage->GetXPadding();
     unsigned int YPadding = convertedImage->GetYPadding();
     unsigned int rowsize = convertedImage->GetWidth();
     unsigned int colsize = convertedImage->GetHeight();
-
     //image data contains padding. When allocating Mat container size, you need to account for the X,Y image data padding.
     Mat img;
     if (COLOR_)
         img = Mat(colsize + YPadding, rowsize + XPadding, CV_8UC3, convertedImage->GetData(), convertedImage->GetStride());
     else
         img = Mat(colsize + YPadding, rowsize + XPadding, CV_8UC1, convertedImage->GetData(), convertedImage->GetStride());
-    
     return img.clone();
     // return img;
     

@@ -1,31 +1,31 @@
 <launch>
   <!-- configure console output verbosity mode:debug_console.conf or std_console.conf -->
-  <env name="ROSCONSOLE_CONFIG_FILE" value="$(find spinnaker_sdk_camera_driver)/cfg/std_console.conf"/>
+  <env name="ROSCONSOLE_CONFIG_FILE" value="$(find spinnaker_sdk_camera_driver)/cfg/debug_console.conf"/>
 
   <!-- acquisition.lauynch -->
-  <arg name="binning"		    default="1"	doc="Binning for cameras, when changing from 2 to 1 cameras need to be unplugged and replugged"/>
-  <arg name="color"		        default="false"	doc="Should color images be used (only works on models that support color images)"/>
-  <arg name="exp"               default="0"	doc="Exposure setting for cameras"/>
-  <arg name="frames"            default="3400"	doc="Numer of frames to save/view 0=ON"/>
-  <arg name="live"              default="false"	doc="Show images on screen GUI"/>
-  <arg name="live_grid"         default="false"	doc="Show images on screen GUI in a grid"/>
-  <arg name="output"            default="screen"	doc="display output to screen or log file"/>
-  <arg name="save"              default="false"	doc="flag whether images should be saved or not"/>
-  <arg name="save_path"         default="~"	doc="location to save the image data"/>
-  <arg name="save_type"         default="bmp"	doc="Type of file type to save to when saving images locally: binary, tiff, bmp, jpeg etc." />
-  <arg name="soft_framerate"    default="20"	doc="When hybrid software triggering is used, this controls the FPS, 0=as fast as possible"/>
-  <arg name="time"              default="false"	doc="Show time/FPS on output"/>
-  <arg name="to_ros"            default="true"	doc="Flag whether images should be published to ROS" />
-  <arg name="utstamps"          default="false"	doc="Flag whether each image should have Unique timestamps vs the master cams time stamp for all" />
-  <arg name="max_rate_save"     default="false"	doc="Flag for max rate mode which is when the master triggerst the slaves and saves images at maximum rate possible" />
+  <arg name="binning"           default="1" doc="Binning for cameras, when changing from 2 to 1 cameras need to be unplugged and replugged"/>
+  <arg name="color"             default="false"  doc="Should color images be used (only works on models that support color images)"/>
+  <arg name="exp"               default="0" doc="Exposure setting for cameras"/>
+  <arg name="frames"            default="3400"  doc="Numer of frames to save/view 0=ON"/>
+  <arg name="live"              default="false" doc="Show images on screen GUI"/>
+  <arg name="live_grid"         default="false" doc="Show images on screen GUI in a grid"/>
+  <arg name="output"            default="screen"  doc="display output to screen or log file"/>
+  <arg name="save"              default="false" doc="flag whether images should be saved or not"/>
+  <arg name="save_path"         default="~" doc="location to save the image data"/>
+  <arg name="save_type"         default="bmp" doc="Type of file type to save to when saving images locally: binary, tiff, bmp, jpeg etc." />
+  <arg name="soft_framerate"    default="15"  doc="When hybrid software triggering is used, this controls the FPS, 0=as fast as possible"/>
+  <arg name="time"              default="false" doc="Show time/FPS on output"/>
+  <arg name="to_ros"            default="true"  doc="Flag whether images should be published to ROS" />
+  <arg name="utstamps"          default="false" doc="Flag whether each image should have Unique timestamps vs the master cams time stamp for all" />
+  <arg name="max_rate_save"     default="false" doc="Flag for max rate mode which is when the master triggerst the slaves and saves images at maximum rate possible" />
   <arg name="config_file"       default="$(find spinnaker_sdk_camera_driver)/params/test_params.yaml" doc="File specifying the parameters of the camera_array"/>
 
   <!-- load the acquisition node -->
   <node pkg="spinnaker_sdk_camera_driver" type="acquisition_node" name="acquisition_node" output="$(arg output)"
-	args="">
+  args="">
 
     <!-- load the acquisition node parameters file.  Note any parameters provided in this file will 
-	 override what is in the yaml file.  Thus use it to set parameters camer_array configuration params -->
+   override what is in the yaml file.  Thus use it to set parameters camer_array configuration params -->
     <rosparam command="load"        file="$(arg config_file)" />
 
     <!-- Load parameters onto server using argument or default values above -->
