@@ -33,6 +33,7 @@ namespace acquisition {
     
         ~Capture();
         Capture();
+        Capture( ros::NodeHandle node,ros::NodeHandle private_nh);
 
         void load_cameras();
         

@@ -23,6 +23,7 @@ find_package(catkin REQUIRED COMPONENTS
   image_transport
   sensor_msgs
   dynamic_reconfigure
+  nodelet
 )
 
 #find_package(PCL REQUIRED)
@@ -59,7 +60,7 @@ generate_messages(
 
 catkin_package(
   INCLUDE_DIRS include
-  CATKIN_DEPENDS roscpp std_msgs message_runtime
+  CATKIN_DEPENDS roscpp std_msgs message_runtime nodelet
   DEPENDS OpenCV LibUnwind
 )
 
@@ -84,11 +85,23 @@ add_library (acquilib SHARED
 add_dependencies(acquilib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 target_link_libraries(acquilib ${LIBS} ${catkin_LIBRARIES})
 
+add_library(capture_nodelet src/capture_nodelet.cpp)
+target_link_libraries(capture_nodelet acquilib ${catkin_LIBRARIES})
+
 add_executable (acquisition_node src/acquisition_node.cpp)
 add_dependencies(acquisition_node acquilib ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 target_link_libraries (acquisition_node acquilib ${LIBS} ${catkin_LIBRARIES})
 
-install(TARGETS acquilib acquisition_node
+
+add_executable (acquisition_nodelet src/acquisition_nodelet.cpp)
+add_dependencies(acquisition_nodelet acquilib capture_nodelet ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
+target_link_libraries (acquisition_nodelet acquilib capture_nodelet ${LIBS} ${catkin_LIBRARIES})
+
+add_executable (nodelet_test src/nodelet_test.cpp)
+add_dependencies(nodelet_test ${catkin_EXPORTED_TARGETS})
+target_link_libraries (nodelet_test ${LIBS} ${catkin_LIBRARIES})
+
+install(TARGETS acquilib acquisition_node capture_nodelet acquisition_nodelet
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

@@ -1,0 +1,25 @@
+//
+// Created by auv on 1/10/19.
+//
+
+#ifndef SPINNAKER_SDK_CAMERA_DRIVER_CAPTURE_NODELET_H
+#define SPINNAKER_SDK_CAMERA_DRIVER_CAPTURE_NODELET_H
+
+#endif //SPINNAKER_SDK_CAMERA_DRIVER_CAPTURE_NODELET_H
+
+#include <nodelet/nodelet.h>
+#include "capture.h"
+namespace acquisition {
+    class capture_nodelet: public nodelet::Nodelet
+    {
+
+    public:
+        capture_nodelet(){}
+        ~capture_nodelet(){}
+        virtual void onInit();
+        //boost::shared_ptr<Capture> inst_;
+
+    };
+
+}
+
