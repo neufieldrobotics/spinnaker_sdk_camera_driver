@@ -85,7 +85,7 @@ add_library (acquilib SHARED
 add_dependencies(acquilib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 target_link_libraries(acquilib ${LIBS} ${catkin_LIBRARIES})
 
-add_library(capture_nodelet src/capture_nodelet.cpp)
+add_library(capture_nodelet src/capture_nodelet.cpp src/subscriber_nodelet.cpp)
 target_link_libraries(capture_nodelet acquilib ${catkin_LIBRARIES})
 
 add_executable (acquisition_node src/acquisition_node.cpp)
@@ -99,9 +99,9 @@ target_link_libraries (acquisition_nodelet acquilib capture_nodelet ${LIBS} ${ca
 
 add_executable (nodelet_test src/nodelet_test.cpp)
 add_dependencies(nodelet_test ${catkin_EXPORTED_TARGETS})
-target_link_libraries (nodelet_test ${LIBS} ${catkin_LIBRARIES})
+target_link_libraries (nodelet_test capture_nodelet ${LIBS} ${catkin_LIBRARIES})
 
-install(TARGETS acquilib acquisition_node capture_nodelet acquisition_nodelet
+install(TARGETS acquilib acquisition_node capture_nodelet acquisition_nodelet nodelet_test
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

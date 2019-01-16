@@ -24,7 +24,7 @@
   <node pkg="spinnaker_sdk_camera_driver" type="acquisition_node" name="acquisition_node" output="$(arg output)"
 	args=""> -->
 
-  <node pkg="nodelet" type="nodelet" name="acquisition_nodelet_manager" args="manager" cwd="node" output="screen"/>
+  <node pkg="nodelet" type="nodelet" name="acquisition_nodelet_manager" args="manager" output="screen"/>
 
   <node pkg="nodelet" type="nodelet" name="acquisition_node"
           args="load acquisition/capture_nodelet acquisition_nodelet_manager" >
@@ -50,6 +50,8 @@
     <param name="to_ros"            value="$(arg to_ros)"/>
     <param name="max_rate_save"     value="$(arg max_rate_save)"/>
 
-  </node>    
+  </node>  
+  <node pkg="nodelet" type="nodelet" name="subscriber_nodelet"
+          args="load acquisition/subscriber_nodelet acquisition_nodelet_manager"  output="screen" /> 
  
 </launch>

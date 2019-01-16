@@ -4,4 +4,9 @@
   This is my nodelet.
   </description>
   </class>
+  <class name="acquisition/subscriber_nodelet" type="acquisition::subscriber_nodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      This is my nodelet.
+    </description>
+  </class>
 </library>

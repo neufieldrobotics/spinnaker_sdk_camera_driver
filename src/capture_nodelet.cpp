@@ -1,5 +1,5 @@
 //
-// Created by auv on 1/10/19.
+// Created by pushyami on 1/10/19.
 //
 
 #include <nodelet/nodelet.h>
@@ -12,14 +12,16 @@ namespace acquisition
     void capture_nodelet::onInit()
     {
         //spinners
-        ros::AsyncSpinner spinner(0); // Use max cores possible for mt
-        spinner.start();
+        //ros::AsyncSpinner spinner(0); // Use max cores possible for mt
+        //spinner.start();
 
-        NODELET_DEBUG("Initializing nodelet");
-        acquisition::Capture cobj(getNodeHandle(), getPrivateNodeHandle());
-        //inst_.reset(new Capture(getNodeHandle(), getPrivateNodeHandle()));
-        cobj.init_array();
-        cobj.run();
+        NODELET_INFO("Initializing nodelet");
+        //acquisition::Capture cobj(getNodeHandle(), getPrivateNodeHandle());
+        inst_.reset(new Capture(getNodeHandle(), getPrivateNodeHandle()));
+        inst_->init_array();
+        pubThread_.reset(new boost::thread(boost::bind(&acquisition::Capture::run, inst_)));
+        // cobj.run();
+        //NODELET_INFO("Initializing nodelet");
     }
 
 
