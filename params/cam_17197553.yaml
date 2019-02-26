@@ -1,18 +1,20 @@
 cam_ids:
-- 17197556
+- 17197553
 cam_aliases:
 - cam0
-master_cam: 17197556
+master_cam: 17197553
 skip: 5
 delay: 0
 
 #Camera info message details
 distortion_model: plumb_bob
 distortion_coeffs:
-- [-0.17465, 0.03501, 0.00064, -0.00036]
+    - [-0.22001, 0.16693, 0.00261, -0.00099, 0.00000]
+    #- [-0.17465, 0.03501, 0.00064, -0.00036]
 #specified as [fx  0 cx 0 fy cy 0  0  1]
 intrinsic_coeffs:
-- [638.71023, 0.0, 315.25919, 0.0, 641.21041, 248.26077, 0.0, 0.0, 1.0]
+    - [1278.71483, 0.0, 623.08283, 0.0, 1284.06247, 515.71835, 0.0, 0.0, 1.0]
+    #- [638.71023, 0.0, 315.25919, 0.0, 641.21041, 248.26077, 0.0, 0.0, 1.0]
 
 # Assign all the follwing via launch file to prevent confusion and conflict
 
