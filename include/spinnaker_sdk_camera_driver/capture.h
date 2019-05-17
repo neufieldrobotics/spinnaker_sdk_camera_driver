@@ -44,6 +44,7 @@ namespace acquisition {
         void deinit_cameras();
         void acquire_mat_images(int);
         void run();
+        void run_external_trig();
         void run_soft_trig();
         void run_mt();
         void publish_to_ros(int, char**, float);
@@ -113,6 +114,7 @@ namespace acquisition {
         bool FIXED_NUM_FRAMES_;
         bool TIME_BENCHMARK_;
         bool MASTER_TIMESTAMP_FOR_ALL_;
+        bool EXTERNAL_TRIGGER_;
         bool SAVE_;
         bool SAVE_BIN_;
         bool MANUAL_TRIGGER_;
