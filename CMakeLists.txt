@@ -33,7 +33,15 @@ find_package(catkin REQUIRED COMPONENTS
 ###
 # Find Packages
 find_package(OpenCV REQUIRED)
-find_package(LibUnwind REQUIRED)
+# use LibUnwind only for x86_64 or x86_32 architecture
+# do not use LibUnwind for arm architecture
+if(${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64 OR x86_32)
+  message("uses LibUnwind for x86_64 or x86_32 architecture")
+  find_package(LibUnwind REQUIRED)
+endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64 OR x86_32)
+if(${CMAKE_SYSTEM_PROCESSOR} MATCHES arm)
+  message("Detected ARM architecture")
+endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES arm)
 
 find_package(Boost REQUIRED)
 if(Boost_FOUND)
@@ -57,25 +65,48 @@ generate_messages(
   DEPENDENCIES
   std_msgs
 )
+## setting catkin_package, include_directories and libs based on architecture
+if(${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64 OR x86_32)
+    catkin_package(
+    INCLUDE_DIRS include
+    CATKIN_DEPENDS roscpp std_msgs message_runtime nodelet
+    DEPENDS OpenCV LibUnwind
+    )
 
-catkin_package(
-  INCLUDE_DIRS include
-  CATKIN_DEPENDS roscpp std_msgs message_runtime nodelet
-  DEPENDS OpenCV LibUnwind
-)
+    include_directories(
+      ${PROJECT_INCLUDE_DIR}
+      ${catkin_INCLUDE_DIRS}
+      ${SPINNAKER_INCLUDE_DIR}
+      ${OpenCV_INCLUDE_DIRS}
+      ${Boost_INCLUDE_DIR}
+      ${LibUnwind_INCLUDE_DIRS}
+    )
 
-include_directories(
-  ${PROJECT_INCLUDE_DIR}
-  ${catkin_INCLUDE_DIRS}
-  ${SPINNAKER_INCLUDE_DIR}
-  ${OpenCV_INCLUDE_DIRS}
-  ${Boost_INCLUDE_DIR}
-  ${LibUnwind_INCLUDE_DIRS}
-)
+    link_directories( ${SPINNAKER_LIB_DIR} )
 
-link_directories( ${SPINNAKER_LIB_DIR} )
+    set (LIBS ${LibUnwind_LIBRARIES} Spinnaker ${OpenCV_LIBS} ${Boost_GENERAL})
+    
+endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64 OR x86_32)
+if(${CMAKE_SYSTEM_PROCESSOR} MATCHES arm)
+    catkin_package(
+    INCLUDE_DIRS include
+    CATKIN_DEPENDS roscpp std_msgs message_runtime nodelet
+    DEPENDS OpenCV
+    )
 
-set (LIBS ${LibUnwind_LIBRARIES} Spinnaker ${OpenCV_LIBS} ${Boost_GENERAL})
+    include_directories(
+      ${PROJECT_INCLUDE_DIR}
+      ${catkin_INCLUDE_DIRS}
+      ${SPINNAKER_INCLUDE_DIR}
+      ${OpenCV_INCLUDE_DIRS}
+      ${Boost_INCLUDE_DIR}
+    )
+
+    link_directories( ${SPINNAKER_LIB_DIR} )
+
+    set (LIBS Spinnaker ${OpenCV_LIBS} ${Boost_GENERAL})
+    
+endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES arm)
 
 add_library (acquilib SHARED
   src/capture.cpp

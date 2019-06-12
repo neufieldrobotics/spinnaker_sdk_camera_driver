@@ -243,39 +243,59 @@ void acquisition::Capture::load_cameras() {
         
                 cams.push_back(cam);
                 
-                camera_image_pubs.push_back(it_.advertise("camera_array/"+cam_names_[j]+"/image_raw", 1));
+                camera_image_pubs.push_back(it_.advertiseCamera("camera_array/"+cam_names_[j]+"/image_raw", 1));
+                //camera_info_pubs.push_back(nh_.advertise<sensor_msgs::CameraInfo>("camera_array/"+cam_names_[j]+"/camera_info", 1));
 
-                camera_info_pubs.push_back(nh_.advertise<sensor_msgs::CameraInfo>("camera_array/"+cam_names_[j]+"/camera_info", 1));
                 img_msgs.push_back(sensor_msgs::ImagePtr());
-                
                 if (PUBLISH_CAM_INFO_){
-                    sensor_msgs::CameraInfo ci_msg;
+                    sensor_msgs::CameraInfoPtr ci_msg(new sensor_msgs::CameraInfo());
                     int image_width = 0;
                     int image_height = 0;
                     std::string distortion_model = ""; 
                     nh_pvt_.getParam("image_height", image_height);
                     nh_pvt_.getParam("image_width", image_width);
                     nh_pvt_.getParam("distortion_model", distortion_model);
-
-                    ci_msg.header.frame_id = "cam_"+to_string(j)+"_optical_frame";
-                    ci_msg.width = image_width;
-                    ci_msg.height = image_height;
-                    ci_msg.distortion_model = distortion_model;
-                    ci_msg.binning_x = binning_;
-                    ci_msg.binning_y = binning_;
-                    
-                    ci_msg.D = distortion_coeff_vec_[j];
+                    ci_msg->header.frame_id = "cam_"+to_string(j)+"_optical_frame";
+                    // full resolution image_size
+                    ci_msg->height = image_height;
+                    ci_msg->width = image_width;
+                    // distortion
+                    ci_msg->distortion_model = distortion_model;
+                    ci_msg->D = distortion_coeff_vec_[j];
+                    // intrinsic coefficients
                     for (int count = 0; count<intrinsic_coeff_vec_[j].size();count++)
-                        ci_msg.K[count] = intrinsic_coeff_vec_[j][count];
-                    
-                    if (!rect_coeff_vec_.empty())
-                        ci_msg.R = {rect_coeff_vec_[j][0], rect_coeff_vec_[j][1], rect_coeff_vec_[j][2],
-                                    rect_coeff_vec_[j][3], rect_coeff_vec_[j][4], rect_coeff_vec_[j][5],
-                                    rect_coeff_vec_[j][6], rect_coeff_vec_[j][7], rect_coeff_vec_[j][8]};
-                    if (!proj_coeff_vec_.empty())
-                        ci_msg.P = {proj_coeff_vec_[j][0], proj_coeff_vec_[j][1], proj_coeff_vec_[j][2], proj_coeff_vec_[j][3],
-                                    proj_coeff_vec_[j][4], proj_coeff_vec_[j][5], proj_coeff_vec_[j][6], proj_coeff_vec_[j][7],
-                                    proj_coeff_vec_[j][8], proj_coeff_vec_[j][9], proj_coeff_vec_[j][10], proj_coeff_vec_[j][11]};
+                        ci_msg->K[count] = intrinsic_coeff_vec_[j][count];
+                    // Rectification matrix
+                    if (!rect_coeff_vec_.empty()) 
+                        ci_msg->R = {
+                            rect_coeff_vec_[j][0], rect_coeff_vec_[j][1], 
+                            rect_coeff_vec_[j][2], rect_coeff_vec_[j][3], 
+                            rect_coeff_vec_[j][4], rect_coeff_vec_[j][5], 
+                            rect_coeff_vec_[j][6], rect_coeff_vec_[j][7], 
+                            rect_coeff_vec_[j][8]};
+                    // Projection/camera matrix
+                    if (!proj_coeff_vec_.empty()){
+                        ci_msg->P = {
+                            proj_coeff_vec_[j][0], proj_coeff_vec_[j][1], 
+                            proj_coeff_vec_[j][2], proj_coeff_vec_[j][3], 
+                            proj_coeff_vec_[j][4], proj_coeff_vec_[j][5], 
+                            proj_coeff_vec_[j][6], proj_coeff_vec_[j][7], 
+                            proj_coeff_vec_[j][8], proj_coeff_vec_[j][9], 
+                            proj_coeff_vec_[j][10], proj_coeff_vec_[j][11]};
+                    }
+                    else if(numCameras_ == 1){
+                        // for case of monocular camera, P[1:3,1:3]=K
+                        ci_msg->P = {
+                        intrinsic_coeff_vec_[j][0], intrinsic_coeff_vec_[j][1],
+                        intrinsic_coeff_vec_[j][2], 0, 
+                        intrinsic_coeff_vec_[j][3], intrinsic_coeff_vec_[j][4],
+                        intrinsic_coeff_vec_[j][5], 0, 
+                        intrinsic_coeff_vec_[j][6], intrinsic_coeff_vec_[j][7],
+                        intrinsic_coeff_vec_[j][8], 0};
+                    }
+                    // binning
+                    ci_msg->binning_x = binning_;
+                    ci_msg->binning_y = binning_;
 
                     cam_info_msgs.push_back(ci_msg);
                 }
@@ -527,8 +547,8 @@ void acquisition::Capture::read_parameters() {
     PUBLISH_CAM_INFO_ = intrinsics_list_provided && distort_list_provided;
     if (PUBLISH_CAM_INFO_)
         ROS_INFO("  Camera coeffs provided, camera info messges will be published.");
-        else
-            ROS_INFO("  Camera coeffs not provided correctly, camera info messges will not be published.");
+    else
+        ROS_INFO("  Camera coeffs not provided correctly, camera info messges will not be published.");
 
 //    ROS_ASSERT_MSG(my_list.getType()
 //    int num_ids = cam_id_vec.size();
@@ -736,15 +756,19 @@ void acquisition::Capture::export_to_ROS() {
 
         if(color_)
             img_msgs[i]=cv_bridge::CvImage(img_msg_header, "bgr8", frames_[i]).toImageMsg();
-            else
-                img_msgs[i]=cv_bridge::CvImage(img_msg_header, "mono8", frames_[i]).toImageMsg();
+        else
+            img_msgs[i]=cv_bridge::CvImage(img_msg_header, "mono8", frames_[i]).toImageMsg();
 
-        camera_image_pubs[i].publish(img_msgs[i]);
-
+        if (PUBLISH_CAM_INFO_){
+            cam_info_msgs[i]->header.stamp = mesg.header.stamp;
+        }
+        camera_image_pubs[i].publish(img_msgs[i],cam_info_msgs[i]);
+/*
         if (PUBLISH_CAM_INFO_){
         cam_info_msgs[i].header.stamp = mesg.header.stamp;
         camera_info_pubs[i].publish(cam_info_msgs[i]);
         }
+    */
     }
     export_to_ROS_time_ = ros::Time::now().toSec()-t;;
 }
@@ -800,9 +824,9 @@ void acquisition::Capture::get_mat_images() {
    
 
     for (int i=0; i<numCameras_; i++) {
-
+        //ROS_INFO_STREAM("CAM ID IS "<< i);
         frames_[i] = cams[i].grab_mat_frame();
-
+        //ROS_INFO("sucess");
         time_stamps_[i] = cams[i].get_time_stamp();
 
 
@@ -851,7 +875,6 @@ void acquisition::Capture::run_soft_trig() {
     }
 
     ros::Rate ros_rate(soft_framerate_);
-    
     try{
         while( ros::ok() ) {
 
@@ -1147,18 +1170,23 @@ std::string acquisition::Capture::todays_date()
 }
 
 void acquisition::Capture::dynamicReconfigureCallback(spinnaker_sdk_camera_driver::spinnaker_camConfig &config, uint32_t level){
-    ROS_INFO_STREAM("Dynamic Reconfigure: Target grey value : " << config.target_grey_val <<"Exposure "<<config.exposure_time);
+    
     ROS_INFO_STREAM("Dynamic Reconfigure: Level : " << level);
-
-    if(level == 1){
+    if(level == 1 || level ==3){
+        ROS_INFO_STREAM("Target grey value : " << config.target_grey_val);
         cams[MASTER_CAM_].setEnumValue("AutoExposureTargetGreyValueAuto", "Off");
         cams[MASTER_CAM_].setFloatValue("AutoExposureTargetGreyValue", config.target_grey_val);
     }
-    else if (level == 3 && config.exposure_time > 0){
-        cams[MASTER_CAM_].setEnumValue("ExposureAuto", "Off");
-        cams[MASTER_CAM_].setEnumValue("ExposureMode", "Timed");
-        cams[MASTER_CAM_].setFloatValue("ExposureTime", config.exposure_time);
+    if (level == 2 || level ==3){
+        ROS_INFO_STREAM("Exposure "<<config.exposure_time);
+        if(config.exposure_time > 0){
+            cams[MASTER_CAM_].setEnumValue("ExposureAuto", "Off");
+            cams[MASTER_CAM_].setEnumValue("ExposureMode", "Timed");
+            cams[MASTER_CAM_].setFloatValue("ExposureTime", config.exposure_time);
+        }
+        else if(config.exposure_time ==0){
+            cams[MASTER_CAM_].setEnumValue("ExposureAuto", "Continuous");
+            cams[MASTER_CAM_].setEnumValue("ExposureMode", "Timed");
+        }
     }
-    
-
 }

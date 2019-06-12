@@ -137,11 +137,12 @@ namespace acquisition {
 
         ros::Publisher acquisition_pub;
         //vector<ros::Publisher> camera_image_pubs;
-        vector<image_transport::Publisher> camera_image_pubs;
-        vector<ros::Publisher> camera_info_pubs;
+        vector<image_transport::CameraPublisher> camera_image_pubs;
+        //vector<ros::Publisher> camera_info_pubs;
+
 		
         vector<sensor_msgs::ImagePtr> img_msgs;
-        vector<sensor_msgs::CameraInfo> cam_info_msgs;
+        vector<sensor_msgs::CameraInfoPtr> cam_info_msgs;
         spinnaker_sdk_camera_driver::SpinnakerImageNames mesg;
         boost::mutex queue_mutex_;  
     };
