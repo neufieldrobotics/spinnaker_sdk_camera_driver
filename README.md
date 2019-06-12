@@ -53,7 +53,6 @@ roslaunch spinnaker_camera_driver acquisition_nodelet.launch
 # To launch node version of driver, use 
 
 roslaunch spinnaker_camera_driver acquisition.launch
-
 # Test that the images are being published by running
 rqt_image_view
 ```
