@@ -14,7 +14,7 @@ The pre-requisites for this repo include:
 * ros-kinetic-cv-bridge
 * ros-kinetic-image-transport
 
-#### Incase of x86_64 or x86_32 architecture, install the following: ####
+# Incase of x86_64 or x86_32 architecture, install the following:
 * libunwind-dev
 
 ```bash
@@ -122,7 +122,7 @@ This is the names that would be given to the cameras for filenames and rostopics
   Specified as [fx  0 cx 0 fy cy 0  0  1]
 * ~projection_coeffs (array of arrays)  
   Projection coefficients of all the cameras in the array.  Must match the number of cam_ids provided.
-  For Monocular camera case, projection_coeffs if not set, intrinsic_coeff will be used to set P[1:3,1:3]=K
+  For case of Monocular camera, if projection_coeffs is not set, intrinsic_coeff will be used to set, P[1:3,1:3]=K
 * ~rectification_coeffs (array of arrays)  
   Rectification coefficients of all the cameras in the array.  Must match the number of cam_ids provided.
 
