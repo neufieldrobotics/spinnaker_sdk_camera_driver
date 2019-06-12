@@ -51,7 +51,7 @@
     <param name="max_rate_save"     value="$(arg max_rate_save)"/>
 
   </node>  
-  <!-- node pkg="nodelet" type="nodelet" name="subscriber_nodelet"
-          args="load acquisition/subscriber_nodelet acquisition_nodelet_manager"  output="screen" / -->  
+  <node pkg="nodelet" type="nodelet" name="subscriber_nodelet"
+          args="load acquisition/subscriber_nodelet acquisition_nodelet_manager"  output="screen" />  
  
 </launch>
