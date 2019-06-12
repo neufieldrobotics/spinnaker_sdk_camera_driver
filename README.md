@@ -89,13 +89,19 @@ This is the names that would be given to the cameras for filenames and rostopics
   Secs to wait in the deinit/init sequence
 
 ### Camera info message details
+* ~image_width (int)
+* ~image_height (int)
 * ~distortion_model (string)  
   Distortion model for the camera calibration.  Typical is 'plumb_bob'
 * ~distortion_coeffs (array of arrays)  
   Distortion coefficients of all the cameras in the array.  Must match the number of cam_ids provided.
 * ~intrinsic_coeff (array of arrays)  
   Intrinsic coefficients of all the cameras in the array.  Must match the number of cam_ids provided.
-Specified as [fx  0 cx 0 fy cy 0  0  1]
+  Specified as [fx  0 cx 0 fy cy 0  0  1]
+* ~projection_coeffs (array of arrays)  
+  Projection coefficients of all the cameras in the array.  Must match the number of cam_ids provided.
+* ~rectification_coeffs (array of arrays)  
+  Rectification coefficients of all the cameras in the array.  Must match the number of cam_ids provided.
 
 ## Multicamera Master-Slave Setup
 When using multiple cameras, we have found that the only way to keep images between different cameras synched is by using a master-slave setup using the GPIO connector. So this is the only way we support multicamera operation with this code. A general guide for multi camera setup is available at https://www.ptgrey.com/tan/11052, however note that we use a slightly different setup with our package.

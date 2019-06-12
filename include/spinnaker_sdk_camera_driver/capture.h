@@ -33,6 +33,7 @@ namespace acquisition {
     
         ~Capture();
         Capture();
+        Capture( ros::NodeHandle node,ros::NodeHandle private_nh);
 
         void load_cameras();
         
@@ -82,6 +83,8 @@ namespace acquisition {
         vector< vector<Mat> > mem_frames_;
         vector<vector<double>> intrinsic_coeff_vec_;
         vector<vector<double>> distortion_coeff_vec_;
+        vector<vector<double>> rect_coeff_vec_;
+        vector<vector<double>> proj_coeff_vec_;
         vector<string> imageNames;
            
         string path_;
@@ -136,6 +139,7 @@ namespace acquisition {
         //vector<ros::Publisher> camera_image_pubs;
         vector<image_transport::CameraPublisher> camera_image_pubs;
         //vector<ros::Publisher> camera_info_pubs;
+
 		
         vector<sensor_msgs::ImagePtr> img_msgs;
         vector<sensor_msgs::CameraInfoPtr> cam_info_msgs;

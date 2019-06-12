@@ -121,6 +121,85 @@ acquisition::Capture::Capture(): it_(nh_), nh_pvt_ ("~") {
     server.setCallback(f);
 }
 
+acquisition::Capture::Capture(ros::NodeHandle nodehandl, ros::NodeHandle private_nh) : nh_ (nodehandl) , it_(nh_), nh_pvt_ (private_nh) {
+
+    int mem;
+    ifstream usb_mem("/sys/module/usbcore/parameters/usbfs_memory_mb");
+    if (usb_mem) {
+        usb_mem >> mem;
+        if (mem >= 1000)
+            ROS_INFO_STREAM("[ OK ] USB memory: "<<mem<<" MB");
+        else{
+            ROS_FATAL_STREAM("  USB memory on system too low ("<<mem<<" MB)! Must be at least 1000 MB. Run: \nsudo sh -c \"echo 1000 > /sys/module/usbcore/parameters/usbfs_memory_mb\"\n Terminating...");
+            ros::shutdown();
+        }
+    } else {
+        ROS_FATAL_STREAM("Could not check USB memory on system! Terminating...");
+        ros::shutdown();
+    }
+
+    // default values for the parameters are set here. Should be removed eventually!!
+    exposure_time_ = 0 ; // default as 0 = auto exposure
+    soft_framerate_ = 20; //default soft framrate
+    ext_ = ".bmp";
+    SOFT_FRAME_RATE_CTRL_ = false;
+    LIVE_ = false;
+    TIME_BENCHMARK_ = false;
+    MASTER_TIMESTAMP_FOR_ALL_ = true;
+    EXPORT_TO_ROS_ = false;
+    PUBLISH_CAM_INFO_ = false;
+    SAVE_ = false;
+    SAVE_BIN_ = false;
+    nframes_ = -1;
+    FIXED_NUM_FRAMES_ = false;
+    MAX_RATE_SAVE_ = false;
+    skip_num_ = 20;
+    init_delay_ = 1;
+    master_fps_ = 20.0;
+    binning_ = 1;
+    todays_date_ = todays_date();
+
+    dump_img_ = "dump" + ext_;
+
+    grab_time_ = 0;
+    save_time_ = 0;
+    toMat_time_ = 0;
+    save_mat_time_ = 0;
+    export_to_ROS_time_ = 0;
+    achieved_time_ = 0;
+
+    // decimation_ = 1;
+
+    CAM_ = 0;
+
+    // default flag values
+
+    MANUAL_TRIGGER_ = false;
+    CAM_DIRS_CREATED_ = false;
+
+    GRID_CREATED_ = false;
+
+
+    //read_settings(config_file);
+    read_parameters();
+
+    // Retrieve singleton reference to system object
+    ROS_INFO_STREAM("Creating system instance...");
+    system_ = System::GetInstance();
+
+    load_cameras();
+
+    //initializing the ros publisher
+    acquisition_pub = nh_.advertise<spinnaker_sdk_camera_driver::SpinnakerImageNames>("camera", 1000);
+    //dynamic reconfigure
+    //dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig> server;
+    dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig>::CallbackType f;
+
+    f = boost::bind(&acquisition::Capture::dynamicReconfigureCallback,this, _1, _2);
+    server.setCallback(f);
+}
+
+
 void acquisition::Capture::load_cameras() {
 
     // Retrieve list of cameras from the system
@@ -170,18 +249,54 @@ void acquisition::Capture::load_cameras() {
                 img_msgs.push_back(sensor_msgs::ImagePtr());
                 if (PUBLISH_CAM_INFO_){
                     sensor_msgs::CameraInfoPtr ci_msg(new sensor_msgs::CameraInfo());
-                    ci_msg->height = 1024;
-                    ci_msg->width = 1280;
-                    ci_msg->distortion_model = "plumb_bob";
+                    int image_width = 0;
+                    int image_height = 0;
+                    std::string distortion_model = ""; 
+                    nh_pvt_.getParam("image_height", image_height);
+                    nh_pvt_.getParam("image_width", image_width);
+                    nh_pvt_.getParam("distortion_model", distortion_model);
+                    ci_msg->header.frame_id = "cam_"+to_string(j)+"_optical_frame";
+                    // full resolution image_size
+                    ci_msg->height = image_height;
+                    ci_msg->width = image_width;
+                    // distortion
+                    ci_msg->distortion_model = distortion_model;
                     ci_msg->D = distortion_coeff_vec_[j];
-                    ci_msg->binning_x = binning_;
-                    ci_msg->binning_y = binning_;
+                    // intrinsic coefficients
                     for (int count = 0; count<intrinsic_coeff_vec_[j].size();count++)
                         ci_msg->K[count] = intrinsic_coeff_vec_[j][count];
-                    ci_msg->header.frame_id = "cam_"+to_string(j)+"_optical_frame";
-                    ci_msg->P = {intrinsic_coeff_vec_[j][0], intrinsic_coeff_vec_[j][1], intrinsic_coeff_vec_[j][2], 0,
-                                 intrinsic_coeff_vec_[j][3], intrinsic_coeff_vec_[j][4], intrinsic_coeff_vec_[j][5], 0,
-                                 intrinsic_coeff_vec_[j][6], intrinsic_coeff_vec_[j][7], intrinsic_coeff_vec_[j][8], 0};
+                    // Rectification matrix
+                    if (!rect_coeff_vec_.empty()) 
+                        ci_msg->R = {
+                            rect_coeff_vec_[j][0], rect_coeff_vec_[j][1], 
+                            rect_coeff_vec_[j][2], rect_coeff_vec_[j][3], 
+                            rect_coeff_vec_[j][4], rect_coeff_vec_[j][5], 
+                            rect_coeff_vec_[j][6], rect_coeff_vec_[j][7], 
+                            rect_coeff_vec_[j][8]};
+                    // Projection/camera matrix
+                    if (!proj_coeff_vec_.empty()){
+                        ci_msg->P = {
+                            proj_coeff_vec_[j][0], proj_coeff_vec_[j][1], 
+                            proj_coeff_vec_[j][2], proj_coeff_vec_[j][3], 
+                            proj_coeff_vec_[j][4], proj_coeff_vec_[j][5], 
+                            proj_coeff_vec_[j][6], proj_coeff_vec_[j][7], 
+                            proj_coeff_vec_[j][8], proj_coeff_vec_[j][9], 
+                            proj_coeff_vec_[j][10], proj_coeff_vec_[j][11]};
+                    }
+                    else if(numCameras_ == 1){
+                        // for case of monocular camera, P[1:3,1:3]=K
+                        ci_msg->P = {
+                        intrinsic_coeff_vec_[j][0], intrinsic_coeff_vec_[j][1],
+                        intrinsic_coeff_vec_[j][2], 0, 
+                        intrinsic_coeff_vec_[j][3], intrinsic_coeff_vec_[j][4],
+                        intrinsic_coeff_vec_[j][5], 0, 
+                        intrinsic_coeff_vec_[j][6], intrinsic_coeff_vec_[j][7],
+                        intrinsic_coeff_vec_[j][8], 0};
+                    }
+                    // binning
+                    ci_msg->binning_x = binning_;
+                    ci_msg->binning_y = binning_;
+
                     cam_info_msgs.push_back(ci_msg);
                 }
                 cam_counter++;
@@ -390,6 +505,42 @@ void acquisition::Capture::read_parameters() {
             distortion_coeff_vec_.push_back(distort);
             ROS_INFO_STREAM("   "<< distort_str );
             distort_list_provided = true;
+        }
+    }
+    
+    XmlRpc::XmlRpcValue rect_list;
+
+    if (nh_pvt_.getParam("rectification_coeffs", rect_list)) {
+        ROS_INFO("  Camera Rectification Paramters:");
+        ROS_ASSERT_MSG(rect_list.size() == num_ids,"If rectification_coeffs are provided, they should be the same number as cam_ids and should correspond in order!");
+        for (int i=0; i<rect_list.size(); i++){
+            std::vector<double> rect;
+            String rect_str="";
+            for (int j=0; j<rect_list[i].size(); j++){
+                ROS_ASSERT_MSG(rect_list[i][j].getType()== XmlRpc::XmlRpcValue::TypeDouble,"Make sure all numbers are entered as doubles eg. 0.0 or 1.1");
+                rect.push_back(static_cast<double>(rect_list[i][j]));
+                rect_str = rect_str +to_string(rect[j])+" ";
+            }
+            rect_coeff_vec_.push_back(rect);
+            ROS_INFO_STREAM("   "<< rect_str );
+        }
+    }
+    
+    XmlRpc::XmlRpcValue proj_list;
+
+    if (nh_pvt_.getParam("projection_coeffs", proj_list)) {
+        ROS_INFO("  Camera Projection Paramters:");
+        ROS_ASSERT_MSG(proj_list.size() == num_ids,"If projection_coeffs are provided, they should be the same number as cam_ids and should correspond in order!");
+        for (int i=0; i<proj_list.size(); i++){
+            std::vector<double> proj;
+            String proj_str="";
+            for (int j=0; j<proj_list[i].size(); j++){
+                ROS_ASSERT_MSG(proj_list[i][j].getType()== XmlRpc::XmlRpcValue::TypeDouble,"Make sure all numbers are entered as doubles eg. 0.0 or 1.1");
+                proj.push_back(static_cast<double>(proj_list[i][j]));
+                proj_str = proj_str +to_string(proj[j])+" ";
+            }
+            proj_coeff_vec_.push_back(proj);
+            ROS_INFO_STREAM("   "<< proj_str );
         }
     }
 
@@ -1019,6 +1170,7 @@ std::string acquisition::Capture::todays_date()
 }
 
 void acquisition::Capture::dynamicReconfigureCallback(spinnaker_sdk_camera_driver::spinnaker_camConfig &config, uint32_t level){
+    
     ROS_INFO_STREAM("Dynamic Reconfigure: Level : " << level);
     if(level == 1 || level ==3){
         ROS_INFO_STREAM("Target grey value : " << config.target_grey_val);
