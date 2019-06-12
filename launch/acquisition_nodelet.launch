@@ -2,7 +2,7 @@
   <!-- configure console output verbosity mode:debug_console.conf or std_console.conf -->
   <env name="ROSCONSOLE_CONFIG_FILE" value="$(find spinnaker_sdk_camera_driver)/cfg/std_console.conf"/>
 
-  <!-- acquisition.lauynch -->
+  <!-- acquisition spinnaker params-->
   <arg name="binning"		    default="1"	doc="Binning for cameras, when changing from 2 to 1 cameras need to be unplugged and replugged"/>
   <arg name="color"		        default="false"	doc="Should color images be used (only works on models that support color images)"/>
   <arg name="exp"               default="0"	doc="Exposure setting for cameras"/>
@@ -20,15 +20,21 @@
   <arg name="max_rate_save"     default="false"	doc="Flag for max rate mode which is when the master triggerst the slaves and saves images at maximum rate possible" />
   <arg name="config_file"       default="$(find spinnaker_sdk_camera_driver)/params/test_params.yaml" doc="File specifying the parameters of the camera_array"/>
 
-  <!-- load the acquisition node
-  <node pkg="spinnaker_sdk_camera_driver" type="acquisition_node" name="acquisition_node" output="$(arg output)"
-	args=""> -->
+  <!-- nodelet params-->
+  <arg name="nodelet_manager_name" default="vision_nodelet_manager" doc="name of the nodelet manager, comes handy when launching multiple nodelets from different launch files" />
+  <arg name="start_nodelet_manager" default="false" doc="If set to True, creates a nodelet manager with $(arg nodelet_manager_name).
+  If False, the acquisition/capture_nodelet waits for the nodelet_manager name $(arg nodelet_manager_name)" />
 
-  <node pkg="nodelet" type="nodelet" name="acquisition_nodelet_manager" args="manager" output="screen"/>
+  <group if="$(arg start_nodelet_manager)">
+    <!-- start the nodelet manager if $(arg start_nodelet_manager) is true-->
 
+    <node pkg="nodelet" type="nodelet" name="$(arg nodelet_manager_name)" args="manager" output="screen" />
+
+  </group>
+
+  <!-- load the acquisition nodelet -->
   <node pkg="nodelet" type="nodelet" name="acquisition_node"
-          args="load acquisition/capture_nodelet acquisition_nodelet_manager" >
-
+          args="load acquisition/capture_nodelet $(arg nodelet_manager_name)" >
     <!-- load the acquisition node parameters file.  Note any parameters provided in this file will 
 	 override what is in the yaml file.  Thus use it to set parameters camer_array configuration params -->
     <rosparam command="load"        file="$(arg config_file)" />
@@ -50,8 +56,6 @@
     <param name="to_ros"            value="$(arg to_ros)"/>
     <param name="max_rate_save"     value="$(arg max_rate_save)"/>
 
-  </node>  
-  <!-- node pkg="nodelet" type="nodelet" name="subscriber_nodelet"
-          args="load acquisition/subscriber_nodelet acquisition_nodelet_manager"  output="screen" / -->  
- 
+  </node>
+
 </launch>

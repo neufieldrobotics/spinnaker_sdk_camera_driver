@@ -13,6 +13,8 @@ The pre-requisites for this repo include:
 * spinnaker (download from [Pt Grey's website](https://www.ptgrey.com/support/downloads))
 * ros-kinetic-cv-bridge
 * ros-kinetic-image-transport
+
+#### Incase of x86_64 or x86_32 architecture, install the following: ####
 * libunwind-dev
 
 ```bash
@@ -21,6 +23,11 @@ The pre-requisites for this repo include:
 # after installing ros, install other pre-requisites with: 
 
 sudo apt install libunwind-dev ros-kinetic-cv-bridge ros-kinetic-image-transport
+
+# if you use arm64 (aarch64), install pre-requisites with: 
+
+sudo apt install ros-kinetic-cv-bridge ros-kinetic-image-transport
+
 ```
 
 ### Installing
@@ -39,7 +46,14 @@ source ~/spinnaker_ws/devel/setup.bash
 
 Modify the `params/test_params.yaml` file replacing the cam-ids and master cam serial number to match your camera's serial number. Then run the code as:
 ```bash
+# To launch nodelet verison of driver, use #
+
+roslaunch spinnaker_camera_driver acquisition_nodelet.launch
+
+# To launch node version of driver, use 
+
 roslaunch spinnaker_camera_driver acquisition.launch
+
 # Test that the images are being published by running
 rqt_image_view
 ```
@@ -88,6 +102,14 @@ This is the names that would be given to the cameras for filenames and rostopics
 * ~delay (float)  
   Secs to wait in the deinit/init sequence
 
+
+### nodelet details
+* ~nodelet_manager_name (string, default: vision_nodelet_manager)
+  Specify the name of the nodelet_manager under which nodelet to be launched.
+* ~start_nodelet_manager (bool, default: false)
+  If set True, nodelet_manager of name $(arg nodelet_manager_name) will be launched.
+  If set False(default), the acquisition/capture_nodelet waits for the nodelet_manager name $(arg nodelet_manager_name).
+
 ### Camera info message details
 * ~image_width (int)
 * ~image_height (int)
@@ -100,8 +122,10 @@ This is the names that would be given to the cameras for filenames and rostopics
   Specified as [fx  0 cx 0 fy cy 0  0  1]
 * ~projection_coeffs (array of arrays)  
   Projection coefficients of all the cameras in the array.  Must match the number of cam_ids provided.
+  For Monocular camera case, projection_coeffs if not set, intrinsic_coeff will be used to set P[1:3,1:3]=K
 * ~rectification_coeffs (array of arrays)  
   Rectification coefficients of all the cameras in the array.  Must match the number of cam_ids provided.
+
 
 ## Multicamera Master-Slave Setup
 When using multiple cameras, we have found that the only way to keep images between different cameras synched is by using a master-slave setup using the GPIO connector. So this is the only way we support multicamera operation with this code. A general guide for multi camera setup is available at https://www.ptgrey.com/tan/11052, however note that we use a slightly different setup with our package.
