@@ -39,9 +39,9 @@ if(${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64 OR x86_32)
   message("uses LibUnwind for x86_64 or x86_32 architecture")
   find_package(LibUnwind REQUIRED)
 endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64 OR x86_32)
-if(${CMAKE_SYSTEM_PROCESSOR} MATCHES arm)
+if(${CMAKE_SYSTEM_PROCESSOR} MATCHES aarch64 OR arm)
   message("Detected ARM architecture")
-endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES arm)
+endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES aarch64 OR arm)
 
 find_package(Boost REQUIRED)
 if(Boost_FOUND)
@@ -87,7 +87,7 @@ if(${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64 OR x86_32)
     set (LIBS ${LibUnwind_LIBRARIES} Spinnaker ${OpenCV_LIBS} ${Boost_GENERAL})
     
 endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64 OR x86_32)
-if(${CMAKE_SYSTEM_PROCESSOR} MATCHES arm)
+if(${CMAKE_SYSTEM_PROCESSOR} MATCHES aarch64 OR arm)
     catkin_package(
     INCLUDE_DIRS include
     CATKIN_DEPENDS roscpp std_msgs message_runtime nodelet
@@ -106,7 +106,7 @@ if(${CMAKE_SYSTEM_PROCESSOR} MATCHES arm)
 
     set (LIBS Spinnaker ${OpenCV_LIBS} ${Boost_GENERAL})
     
-endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES arm)
+endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES aarch64 OR arm)
 
 add_library (acquilib SHARED
   src/capture.cpp
