@@ -5,7 +5,8 @@
   <!-- acquisition spinnaker params-->
   <arg name="binning"           default="1" doc="Binning for cameras, when changing from 2 to 1 cameras need to be unplugged and replugged"/>
   <arg name="color"             default="false" doc="Should color images be used (only works on models that support color images)"/>
-  <arg name="exposure_time"               default="0" doc="Exposure setting for cameras"/>
+  <arg name="exposure_time"     default="0" doc="Exposure_time setting for cameras"/>
+  <arg name="target_grey_value"   default="0"   doc="AutoExposureTargetGreyValue min: 4 max: 99 if set below 4, AutoExposureTargetGreyValueAuto will be set to continuous(auto) also available as dynamic reconfigurable parameter" />
   <arg name="frames"            default="3400"  doc="Numer of frames to save/view 0=ON"/>
   <arg name="live"              default="false" doc="Show images on screen GUI"/>
   <arg name="live_grid"         default="false" doc="Show images on screen GUI in a grid"/>
@@ -39,6 +40,7 @@
 
     <!-- Load parameters onto server using argument or default values above -->
     <param name="exposure_time"     value="$(arg exposure_time)" />
+    <param name="target_grey_value" value="$(arg target_grey_value)" />
     <param name="binning"           value="$(arg binning)" />
     <param name="color"             value="$(arg color)" />
     <param name="frames"            value="$(arg frames)" />

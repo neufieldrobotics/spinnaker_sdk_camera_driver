@@ -435,6 +435,12 @@ void acquisition::Capture::read_parameters() {
         else ROS_INFO("  'exposure_time'=%0.f, Setting autoexposure",exposure_time_);
     } else ROS_WARN("  'exposure_time' Parameter not set, using default behavior: Automatic Exposure ");
 
+    if (nh_pvt_.getParam("target_grey_value", target_grey_value_)){
+        if (target_grey_value_ >0) ROS_INFO("  target_grey_value set to: %.1f",target_grey_value_);
+        else ROS_INFO("  'target_grey_value'=%0.f, Setting AutoExposureTargetGreyValueAuto to Continuous/ auto",target_grey_value_);} 
+    else ROS_WARN("  'target_grey_value' Parameter not set, using default behavior: AutoExposureTargetGreyValueAuto to auto");
+
+
     if (nh_pvt_.getParam("binning", binning_)){
         if (binning_ >0) ROS_INFO("  Binning set to: %d",binning_);
         else {
@@ -611,7 +617,13 @@ void acquisition::Capture::init_cameras(bool soft = false) {
                 } else {
                     cams[i].setEnumValue("ExposureAuto", "Continuous");
                 }
-                
+                if (target_grey_value_ > 4.0) {
+                    cams[i].setEnumValue("AutoExposureTargetGreyValueAuto", "Off");
+                    cams[i].setFloatValue("AutoExposureTargetGreyValue", target_grey_value_);
+                } else {
+                    cams[i].setEnumValue("AutoExposureTargetGreyValueAuto", "Continuous");
+                }
+
                 // cams[i].setIntValue("DecimationHorizontal", decimation_);
                 // cams[i].setIntValue("DecimationVertical", decimation_);
                 // cams[i].setFloatValue("AcquisitionFrameRate", 5.0);
@@ -1177,20 +1189,28 @@ void acquisition::Capture::dynamicReconfigureCallback(spinnaker_sdk_camera_drive
     
     ROS_INFO_STREAM("Dynamic Reconfigure: Level : " << level);
     if(level == 1 || level ==3){
-        ROS_INFO_STREAM("Target grey value : " << config.target_grey_val);
-        cams[MASTER_CAM_].setEnumValue("AutoExposureTargetGreyValueAuto", "Off");
-        cams[MASTER_CAM_].setFloatValue("AutoExposureTargetGreyValue", config.target_grey_val);
+        ROS_INFO_STREAM("Target grey value : " << config.target_grey_value);
+        for (int i = numCameras_-1 ; i >=0 ; i--) {
+            
+            cams[i].setEnumValue("AutoExposureTargetGreyValueAuto", "Off");
+            cams[i].setFloatValue("AutoExposureTargetGreyValue", config.target_grey_value);
+        }
     }
     if (level == 2 || level ==3){
         ROS_INFO_STREAM("Exposure "<<config.exposure_time);
         if(config.exposure_time > 0){
-            cams[MASTER_CAM_].setEnumValue("ExposureAuto", "Off");
-            cams[MASTER_CAM_].setEnumValue("ExposureMode", "Timed");
-            cams[MASTER_CAM_].setFloatValue("ExposureTime", config.exposure_time);
+            for (int i = numCameras_-1 ; i >=0 ; i--) {
+
+                cams[i].setEnumValue("ExposureAuto", "Off");
+                cams[i].setEnumValue("ExposureMode", "Timed");
+                cams[i].setFloatValue("ExposureTime", config.exposure_time);
+            }
         }
         else if(config.exposure_time ==0){
-            cams[MASTER_CAM_].setEnumValue("ExposureAuto", "Continuous");
-            cams[MASTER_CAM_].setEnumValue("ExposureMode", "Timed");
+            for (int i = numCameras_-1 ; i >=0 ; i--) {
+                cams[i].setEnumValue("ExposureAuto", "Continuous");
+                cams[i].setEnumValue("ExposureMode", "Timed");
+            }
         }
     }
 }

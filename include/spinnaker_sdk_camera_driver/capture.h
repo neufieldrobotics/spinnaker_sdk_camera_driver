@@ -102,6 +102,7 @@ namespace acquisition {
         string dump_img_;
         string ext_;
         float exposure_time_;
+        double target_grey_value_;
         // int decimation_;
 
         int soft_framerate_; // Software (ROS) frame rate

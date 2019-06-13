@@ -66,6 +66,8 @@ All the parameters can be set via the launch file or via the yaml config_file.  
   Should color images be used (only works on models that support color images)
 * ~exposure_time (int, default: 0, 0:auto)  
   Exposure setting for cameras, also available as dynamic reconfiguarble parameter.
+* ~target_grey_value (double, default: 0 , 0:Continous/auto)
+  Setting target_grey_value > 4 (min:4 , max:99) will turn AutoExposureTargetGreyValueAuto to 'off' and set AutoExposureTargetGreyValue to target_grey_value. Also available as dynamic reconfigurable parameter. see below in Dynamic reconfigurable parameter section.
 * ~frames (int, default: 50)  
   Number of frames to save/view 0=ON
 * ~live (bool, default: false)  
@@ -103,11 +105,11 @@ This is the names that would be given to the cameras for filenames and rostopics
 
 
 ### Dynamic Reconfigure parameters
-* ~target_grey_val (double)
+* ~target_grey_value (double)
   Target Grey Value is a parameter that helps to compensate for various lighting conditions by adjusting brightness to achieve optimal imaging results. The value is linear and is a percentage of the maximum pixel value.
   Explained in detail at [FLIR webpage](https://www.flir.com/support-center/iis/machine-vision/application-note/using-auto-exposure-in-blackfly-s/).
 
-  Setting target_grey_val invokes setting AutoExposureTargetGreyValueAuto to 'off' and AutoExposureTargetGreyValue is set to target_grey_val.
+  Setting target_grey_value invokes setting AutoExposureTargetGreyValueAuto to 'off' and AutoExposureTargetGreyValue is set to target_grey_value.
 * ~exposure_time (int, default= 0, 0:auto)
   Exposure time for the sensor.
   When Exposure time is set within minimum and maximum exposure time limits(varies with camera model), ExposureAuto is set to 'off' and ExposureTime is set to exposure_time param value. 
