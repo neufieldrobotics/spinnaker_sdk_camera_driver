@@ -1,4 +1,4 @@
-# spinnaker_camera_driver
+# spinnaker_sdk_camera_driver
 
 These are the ros drivers for running the Pt Grey (FLIR) cameras that use the Spinnaker SDK.  This code has been tested with various Point Grey Blackfly S (BFS) cameras. 
 
@@ -64,8 +64,8 @@ All the parameters can be set via the launch file or via the yaml config_file.  
   Binning for cameras, when changing from 2 to 1 cameras need to be unplugged and replugged
 * ~color (bool, default: false)  
   Should color images be used (only works on models that support color images)
-* ~exp (int, default: 0)  
-  Exposure setting for cameras
+* ~exposure_time (int, default: 0, 0:auto)  
+  Exposure setting for cameras, also available as dynamic reconfiguarble parameter.
 * ~frames (int, default: 50)  
   Number of frames to save/view 0=ON
 * ~live (bool, default: false)  
@@ -87,7 +87,7 @@ All the parameters can be set via the launch file or via the yaml config_file.  
 * ~utstamps (bool, default:false)  
   Flag whether each image should have Unique timestamps vs the master cams time stamp for all
 * ~max_rate_save (bool, default: false)  
-  Flag for max rate mode which is when the master triggers the slaves and saves images at maximum rate possible.  This is the multithreaded mode"
+  Flag for max rate mode which is when the master triggers the slaves and saves images at maximum rate possible.  This is the multithreaded mode
 
 ### System configuration parameters
 * ~cam_ids (yaml sequence or array)  
@@ -99,8 +99,20 @@ This is the names that would be given to the cameras for filenames and rostopics
 * ~skip (int)  
   Number of frames to be skipped initially to flush the buffer
 * ~delay (float)  
-  Secs to wait in the deinit/init sequence
+  Secs to wait in the deinit/init sequence.
 
+
+### Dynamic Reconfigure parameters
+* ~target_grey_val (double)
+  Target Grey Value is a parameter that helps to compensate for various lighting conditions by adjusting brightness to achieve optimal imaging results. The value is linear and is a percentage of the maximum pixel value.
+  Explained in detail at [FLIR webpage](https://www.flir.com/support-center/iis/machine-vision/application-note/using-auto-exposure-in-blackfly-s/).
+
+  Setting target_grey_val invokes setting AutoExposureTargetGreyValueAuto to 'off' and AutoExposureTargetGreyValue is set to target_grey_val.
+* ~exposure_time (int, default= 0, 0:auto)
+  Exposure time for the sensor.
+  When Exposure time is set within minimum and maximum exposure time limits(varies with camera model), ExposureAuto is set to 'off' and ExposureTime is set to exposure_time param value. 
+
+  When exposure_time is set to 0(zero), the ExposureAuto is set to 'Continuous', enabling auto exposure.
 
 ### nodelet details
 * ~nodelet_manager_name (string, default: vision_nodelet_manager)

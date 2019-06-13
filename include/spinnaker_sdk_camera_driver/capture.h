@@ -133,7 +133,7 @@ namespace acquisition {
         ros::NodeHandle nh_pvt_;
         //image_transport::ImageTransport it_;
         image_transport::ImageTransport it_;
-        dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig> server;
+        dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig>* dynamicReCfgServer_;
 
         ros::Publisher acquisition_pub;
         //vector<ros::Publisher> camera_image_pubs;

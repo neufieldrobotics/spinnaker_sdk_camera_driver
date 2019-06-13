@@ -7,9 +7,9 @@
         <!-- launch nodelet manager -->
         <node pkg="nodelet" type="nodelet" name="$(arg vision_nm)" args="manager" output="screen"/>
         <!-- launch camera nodelet -->
-        <include file="$(find spinnaker_sdk_camera_driver)/launch/acquisition_nodelet.launch" >
+        <include file="$(find spinnaker_sdk_camera_driver)/launch/acquisition.launch" >
             <arg name="nodelet_manager_name" value="$(arg vision_nm)" />
-            <arf name="start_nodelet_manager" value="false" />
+            <arg name="start_nodelet_manager" value="false" />
         </include>
         
         <!-- launch apriltag_ros nodelet -->

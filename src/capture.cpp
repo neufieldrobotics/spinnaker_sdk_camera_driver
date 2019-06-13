@@ -23,6 +23,8 @@ acquisition::Capture::~Capture(){
     
     ROS_INFO_STREAM("Releasing system instance...");
     system_->ReleaseInstance();
+
+    delete dynamicReCfgServer_;
     
     ros::shutdown();
 
@@ -114,11 +116,12 @@ acquisition::Capture::Capture(): it_(nh_), nh_pvt_ ("~") {
     //initializing the ros publisher
     acquisition_pub = nh_.advertise<spinnaker_sdk_camera_driver::SpinnakerImageNames>("camera", 1000);
     //dynamic reconfigure
-    //dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig> server;
-    dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig>::CallbackType f;
+    dynamicReCfgServer_ = new dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig>(nh_pvt_);
+    
+    dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig>::CallbackType dynamicReCfgServerCB_t;   
 
-    f = boost::bind(&acquisition::Capture::dynamicReconfigureCallback,this, _1, _2);
-    server.setCallback(f);
+    dynamicReCfgServerCB_t = boost::bind(&acquisition::Capture::dynamicReconfigureCallback,this, _1, _2);
+    dynamicReCfgServer_->setCallback(dynamicReCfgServerCB_t);
 }
 
 acquisition::Capture::Capture(ros::NodeHandle nodehandl, ros::NodeHandle private_nh) : nh_ (nodehandl) , it_(nh_), nh_pvt_ (private_nh) {
@@ -192,11 +195,12 @@ acquisition::Capture::Capture(ros::NodeHandle nodehandl, ros::NodeHandle private
     //initializing the ros publisher
     acquisition_pub = nh_.advertise<spinnaker_sdk_camera_driver::SpinnakerImageNames>("camera", 1000);
     //dynamic reconfigure
-    //dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig> server;
-    dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig>::CallbackType f;
+    dynamicReCfgServer_ = new dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig>(nh_pvt_);
+    
+    dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig>::CallbackType dynamicReCfgServerCB_t;   
 
-    f = boost::bind(&acquisition::Capture::dynamicReconfigureCallback,this, _1, _2);
-    server.setCallback(f);
+    dynamicReCfgServerCB_t = boost::bind(&acquisition::Capture::dynamicReconfigureCallback,this, _1, _2);
+    dynamicReCfgServer_->setCallback(dynamicReCfgServerCB_t);
 }
 
 
@@ -426,10 +430,10 @@ void acquisition::Capture::read_parameters() {
     }
         else ROS_WARN("  'fps' Parameter not set, using default behavior: fps=%0.2f",master_fps_);
 
-    if (nh_pvt_.getParam("exp", exposure_time_)){
+    if (nh_pvt_.getParam("exposure_time", exposure_time_)){
         if (exposure_time_ >0) ROS_INFO("  Exposure set to: %.1f",exposure_time_);
-        else ROS_INFO("  'exp'=%0.f, Setting autoexposure",exposure_time_);
-    } else ROS_WARN("  'exp' Parameter not set, using default behavior: Automatic Exposure ");
+        else ROS_INFO("  'exposure_time'=%0.f, Setting autoexposure",exposure_time_);
+    } else ROS_WARN("  'exposure_time' Parameter not set, using default behavior: Automatic Exposure ");
 
     if (nh_pvt_.getParam("binning", binning_)){
         if (binning_ >0) ROS_INFO("  Binning set to: %d",binning_);
