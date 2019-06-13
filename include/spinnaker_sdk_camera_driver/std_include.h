@@ -15,6 +15,9 @@
 #include <cv_bridge/cv_bridge.h>
 #include "sensor_msgs/Image.h"
 #include "sensor_msgs/CameraInfo.h"
+#include "std_msgs/String.h"
+#include <image_transport/image_transport.h>
+#include "sensor_msgs/Image.h"
 
 
 // Standard Libs

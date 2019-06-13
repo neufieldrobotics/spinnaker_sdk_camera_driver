@@ -7,11 +7,17 @@
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/filesystem.hpp>
-
+//ROS
+#include "std_msgs/Float64.h"
 #include "std_msgs/String.h"
+//Dynamic reconfigure
+#include <dynamic_reconfigure/server.h>
+#include <spinnaker_sdk_camera_driver/spinnaker_camConfig.h>
+
 #include "spinnaker_sdk_camera_driver/SpinnakerImageNames.h"
 
 #include <sstream>
+#include <image_transport/image_transport.h>
 
 using namespace Spinnaker;
 using namespace Spinnaker::GenApi;
@@ -27,6 +33,7 @@ namespace acquisition {
     
         ~Capture();
         Capture();
+        Capture( ros::NodeHandle node,ros::NodeHandle private_nh);
 
         void load_cameras();
         
@@ -58,6 +65,7 @@ namespace acquisition {
         void get_mat_images();
         void update_grid();
         void export_to_ROS();
+        void dynamicReconfigureCallback(spinnaker_sdk_camera_driver::spinnaker_camConfig &config, uint32_t level);
 
         float mem_usage();
     
@@ -123,13 +131,18 @@ namespace acquisition {
         // ros variables
         ros::NodeHandle nh_;
         ros::NodeHandle nh_pvt_;
+        //image_transport::ImageTransport it_;
+        image_transport::ImageTransport it_;
+        dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig>* dynamicReCfgServer_;
 
         ros::Publisher acquisition_pub;
-        vector<ros::Publisher> camera_image_pubs;
-        vector<ros::Publisher> camera_info_pubs;
+        //vector<ros::Publisher> camera_image_pubs;
+        vector<image_transport::CameraPublisher> camera_image_pubs;
+        //vector<ros::Publisher> camera_info_pubs;
+
 		
         vector<sensor_msgs::ImagePtr> img_msgs;
-        vector<sensor_msgs::CameraInfo> cam_info_msgs;
+        vector<sensor_msgs::CameraInfoPtr> cam_info_msgs;
         spinnaker_sdk_camera_driver::SpinnakerImageNames mesg;
         boost::mutex queue_mutex_;  
     };
