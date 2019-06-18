@@ -27,8 +27,7 @@
   If False, the acquisition/capture_nodelet waits for the nodelet_manager name $(arg nodelet_manager_name)" />
 
   <!-- Capture nodelet params-->
-  <arg name="tf_prefix" default="" />
-
+  <arg name="tf_prefix" default="" doc="will prefix (arg tf_prefix)/ to existing frame_id in Image msg and camerainfo msg" />
   <!-- start the nodelet manager -->
   <node pkg="nodelet" type="nodelet" name="$(arg nodelet_manager_name)" args="manager" output="screen" />
 
