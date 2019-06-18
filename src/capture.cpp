@@ -150,6 +150,7 @@ acquisition::Capture::Capture(ros::NodeHandle nodehandl, ros::NodeHandle private
     LIVE_ = false;
     TIME_BENCHMARK_ = false;
     MASTER_TIMESTAMP_FOR_ALL_ = true;
+    EXTERNAL_TRIGGER_ = false;
     EXPORT_TO_ROS_ = false;
     PUBLISH_CAM_INFO_ = false;
     SAVE_ = false;
@@ -895,141 +896,6 @@ void acquisition::Capture::get_mat_images() {
     
 }
 
-void acquisition::Capture::run_external_trig() {
-    achieved_time_ = ros::Time::now().toSec();
-    ROS_INFO("*** ACQUISITION in external trigger mode***");
-    
-    start_acquisition();
-
-    // Camera directories created at first save
-    
-    if (LIVE_)namedWindow("Acquisition", CV_WINDOW_NORMAL | CV_WINDOW_KEEPRATIO);
-
-    int count = 0;
-    
-    //cams[MASTER_CAM_].trigger();
-    get_mat_images();
-    if (SAVE_) {
-        count++;
-        if (SAVE_BIN_)
-            save_binary_frames(0);
-        else
-            save_mat_frames(0);
-    }
-
-    ros::Rate ros_rate(100);
-    
-    try{
-        while( ros::ok() ) {
-
-            double t = ros::Time::now().toSec();
-
-            if (LIVE_) {
-                if (GRID_VIEW_) {
-                    update_grid();
-                    imshow("Acquisition", grid_);
-                } else {
-                    imshow("Acquisition", frames_[CAM_]);
-                    char title[50];
-                    sprintf(title, "cam # = %d, cam ID = %s, cam name = %s", CAM_, cam_ids_[CAM_].c_str(), cam_names_[CAM_].c_str());
-                    displayOverlay("Acquisition", title);
-                }
-            }
-
-            int key = cvWaitKey(1);
-            ROS_DEBUG_STREAM("Key press: "<<(key & 255)<<endl);
-            
-            if ( (key & 255)!=255 ) {
-
-                if ( (key & 255)==83 ) {
-                    if (CAM_<numCameras_-1) // RIGHT ARROW
-                        CAM_++;
-                } else if( (key & 255)==81 ) { // LEFT ARROW
-                    if (CAM_>0)
-                        CAM_--;
-                } else if( (key & 255)==84 && MANUAL_TRIGGER_) { // t
-                    cams[MASTER_CAM_].trigger();
-                    get_mat_images();
-                } else if( (key & 255)==32 && !SAVE_) { // SPACE
-                    ROS_INFO_STREAM("Saving frame...");
-                    if (SAVE_BIN_)
-                        save_binary_frames(0);
-                        else{
-                            save_mat_frames(0);
-                            if (!EXPORT_TO_ROS_){
-                                ROS_INFO_STREAM("Exporting frames to ROS...");
-                                export_to_ROS();
-                            }
-                        }
-                } else if( (key & 255)==27 ) {  // ESC
-                    ROS_INFO_STREAM("Terminating...");
-                    cvDestroyAllWindows();
-                    ros::shutdown();
-                    break;
-                }
-                ROS_DEBUG_STREAM("active cam switched to: "<<CAM_);
-            }
-
-            double disp_time_ = ros::Time::now().toSec() - t;
-            
-            // Call update functions
-            
-            if (!MANUAL_TRIGGER_) {
-                //cams[MASTER_CAM_].trigger();
-                get_mat_images();
-            }
-            
-
-            if (SAVE_) {
-                count++;
-                if (SAVE_BIN_)
-                    save_binary_frames(0);
-                else
-                    save_mat_frames(0);
-            }
-
-            /*if (FIXED_NUM_FRAMES_) {
-                cout<<"Nframes "<< nframes_<<endl;
-                if (count > nframes_) {
-                    ROS_INFO_STREAM(nframes_ << " frames recorded. Terminating...");
-                    cvDestroyAllWindows();
-                    break;
-                }
-            }
-            */
-            
-            if (EXPORT_TO_ROS_) export_to_ROS();
-            
-            // ros publishing messages
-            acquisition_pub.publish(mesg);
-
-            // double total_time = grab_time_ + toMat_time_ + disp_time_ + save_mat_time_;
-            double total_time = toMat_time_ + disp_time_ + save_mat_time_+export_to_ROS_time_;
-            achieved_time_ = ros::Time::now().toSec() - achieved_time_;
-
-            ROS_INFO_COND(TIME_BENCHMARK_,
-                          "total time (ms): %.1f \tPossible FPS: %.1f\tActual FPS: %.1f",
-                          total_time*1000,1/total_time,1/achieved_time_);
-            
-            ROS_INFO_COND(TIME_BENCHMARK_,"Times (ms):- grab: %.1f, disp: %.1f, save: %.1f, exp2ROS: %.1f",
-                          toMat_time_*1000,disp_time_*1000,save_mat_time_*1000,export_to_ROS_time_*1000);
-            
-            achieved_time_=ros::Time::now().toSec();
-            
-            if (SOFT_FRAME_RATE_CTRL_) {ros_rate.sleep();}
-
-        }
-    }
-    catch(const std::exception &e){
-        ROS_FATAL_STREAM("Excption: "<<e.what());
-    }
-    catch(...){
-        ROS_FATAL_STREAM("Some unknown exception occured. \v Exiting gracefully, \n  possible reason could be Camera Disconnection...");
-    }
-}
-
-
-
 void acquisition::Capture::run_soft_trig() {
     achieved_time_ = ros::Time::now().toSec();
     ROS_INFO("*** ACQUISITION ***");
@@ -1042,7 +908,10 @@ void acquisition::Capture::run_soft_trig() {
 
     int count = 0;
     
-    cams[MASTER_CAM_].trigger();
+    if (!EXTERNAL_TRIGGER_) {
+        cams[MASTER_CAM_].trigger();
+    }
+    
     get_mat_images();
     if (SAVE_) {
         count++;
@@ -1108,7 +977,9 @@ void acquisition::Capture::run_soft_trig() {
 
             // Call update functions
             if (!MANUAL_TRIGGER_) {
-                cams[MASTER_CAM_].trigger();
+                if (!EXTERNAL_TRIGGER_) {
+                    cams[MASTER_CAM_].trigger();
+                }
                 get_mat_images();
             }
 
@@ -1334,8 +1205,6 @@ void acquisition::Capture::run_mt() {
 void acquisition::Capture::run() {
     if (MAX_RATE_SAVE_)
 		run_mt();
-	else if (EXTERNAL_TRIGGER_)
-		run_external_trig();
 	else
 		run_soft_trig();
 }
