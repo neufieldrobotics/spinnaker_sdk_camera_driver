@@ -21,11 +21,13 @@
   <arg name="max_rate_save"     default="false"	doc="Flag for max rate mode which is when the master triggerst the slaves and saves images at maximum rate possible" />
   <arg name="config_file"       default="$(find spinnaker_sdk_camera_driver)/params/test_params.yaml" doc="File specifying the parameters of the camera_array"/>
 
-  <!-- nodelet params-->
+  <!-- nodelet manager params-->
   <arg name="nodelet_manager_name" default="vision_nodelet_manager" doc="name of the nodelet manager, comes handy when launching multiple nodelets from different launch files" />
   <arg name="start_nodelet_manager" default="true" doc="If set to True(default), creates a nodelet manager with $(arg nodelet_manager_name).
   If False, the acquisition/capture_nodelet waits for the nodelet_manager name $(arg nodelet_manager_name)" />
 
+  <!-- Capture nodelet params-->
+  <arg name="tf_prefix" default="" />
    <!-- start the nodelet manager if $(arg start_nodelet_manager) is true-->
   <node pkg="nodelet" type="nodelet" name="$(arg nodelet_manager_name)" args="manager" output="screen" if="$(arg start_nodelet_manager)" />
 
@@ -51,8 +53,9 @@
     <param name="time"              value="$(arg time)" />
     <param name="utstamps"          value="$(arg utstamps)" />
     <param name="to_ros"            value="$(arg to_ros)"/>
-    <param name="max_rate_save"     value="$(arg max_rate_save)"/>
-
+    <param name="max_rate_save"     value="$(arg max_rate_save)" />
+    <param name="tf_prefix"         value="$(arg tf_prefix)" />
+    
   </node>
 
 </launch>
