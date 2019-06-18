@@ -91,6 +91,11 @@ All the parameters can be set via the launch file or via the yaml config_file.  
 * ~max_rate_save (bool, default: false)  
   Flag for max rate mode which is when the master triggers the slaves and saves images at maximum rate possible.  This is the multithreaded mode
 
+### node/nodelet Specific Parameters
+* ~tf_prefix (string, default: "")  
+  tf_prefix will be pre-fixed to (existing cam_*_optical_frame) frame id in ros Image msg and cameraInfo msg. default option doesn't add any prefix to frame id. eg: uas1/cam_0_optical_frame if tf_prefix:= uas1
+
+
 ### System configuration parameters
 * ~cam_ids (yaml sequence or array)  
   This is a list of camera serial numbers in the order which it would be organized.  The convention is to start from left to right.
