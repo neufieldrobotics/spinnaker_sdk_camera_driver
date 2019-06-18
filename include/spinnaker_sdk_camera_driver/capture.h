@@ -104,7 +104,7 @@ namespace acquisition {
         float exposure_time_;
         double target_grey_value_;
         // int decimation_;
-
+        string tf_prefix_;        
         int soft_framerate_; // Software (ROS) frame rate
         
         int MASTER_CAM_;
@@ -128,7 +128,7 @@ namespace acquisition {
         // grid view related variables
         bool GRID_CREATED_;
         Mat grid_;
-
+    
         // ros variables
         ros::NodeHandle nh_;
         ros::NodeHandle nh_pvt_;
