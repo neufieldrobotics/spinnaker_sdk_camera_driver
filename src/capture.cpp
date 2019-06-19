@@ -251,24 +251,30 @@ void acquisition::Capture::load_cameras() {
                 //camera_info_pubs.push_back(nh_.advertise<sensor_msgs::CameraInfo>("camera_array/"+cam_names_[j]+"/camera_info", 1));
 
                 img_msgs.push_back(sensor_msgs::ImagePtr());
+
+                sensor_msgs::CameraInfoPtr ci_msg(new sensor_msgs::CameraInfo());
+                int image_width = 0;
+                int image_height = 0;
+                std::string distortion_model = ""; 
+                nh_pvt_.getParam("image_height", image_height);
+                nh_pvt_.getParam("image_width", image_width);
+                nh_pvt_.getParam("distortion_model", distortion_model);
+                ci_msg->header.frame_id = "cam_"+to_string(j)+"_optical_frame";
+                // full resolution image_size
+                ci_msg->height = image_height;
+                ci_msg->width = image_width;
+                // distortion
+                ci_msg->distortion_model = distortion_model;
+                // binning
+                ci_msg->binning_x = binning_;
+                ci_msg->binning_y = binning_;
+            
                 if (PUBLISH_CAM_INFO_){
-                    sensor_msgs::CameraInfoPtr ci_msg(new sensor_msgs::CameraInfo());
-                    int image_width = 0;
-                    int image_height = 0;
-                    std::string distortion_model = ""; 
-                    nh_pvt_.getParam("image_height", image_height);
-                    nh_pvt_.getParam("image_width", image_width);
-                    nh_pvt_.getParam("distortion_model", distortion_model);
-                    ci_msg->header.frame_id = "cam_"+to_string(j)+"_optical_frame";
-                    // full resolution image_size
-                    ci_msg->height = image_height;
-                    ci_msg->width = image_width;
-                    // distortion
-                    ci_msg->distortion_model = distortion_model;
                     ci_msg->D = distortion_coeff_vec_[j];
                     // intrinsic coefficients
-                    for (int count = 0; count<intrinsic_coeff_vec_[j].size();count++)
+                    for (int count = 0; count<intrinsic_coeff_vec_[j].size();count++){
                         ci_msg->K[count] = intrinsic_coeff_vec_[j][count];
+                    }
                     // Rectification matrix
                     if (!rect_coeff_vec_.empty()) 
                         ci_msg->R = {
@@ -287,7 +293,8 @@ void acquisition::Capture::load_cameras() {
                             proj_coeff_vec_[j][8], proj_coeff_vec_[j][9], 
                             proj_coeff_vec_[j][10], proj_coeff_vec_[j][11]};
                     }
-                    else if(numCameras_ == 1){
+                    //else if(numCameras_ == 1){
+                    else if(cam_ids_.size() == 1){  
                         // for case of monocular camera, P[1:3,1:3]=K
                         ci_msg->P = {
                         intrinsic_coeff_vec_[j][0], intrinsic_coeff_vec_[j][1],
@@ -297,19 +304,23 @@ void acquisition::Capture::load_cameras() {
                         intrinsic_coeff_vec_[j][6], intrinsic_coeff_vec_[j][7],
                         intrinsic_coeff_vec_[j][8], 0};
                     }
-                    // binning
-                    ci_msg->binning_x = binning_;
-                    ci_msg->binning_y = binning_;
-
-                    cam_info_msgs.push_back(ci_msg);
                 }
+
+                cam_info_msgs.push_back(ci_msg);
+
                 cam_counter++;
+            
             }
         }
         if (!current_cam_found) ROS_WARN_STREAM("   Camera "<<cam_ids_[j]<<" not detected!!!");
     }
     ROS_ASSERT_MSG(cams.size(),"None of the connected cameras are in the config list!");
     ROS_ASSERT_MSG(master_set,"The camera supposed to be the master isn't connected!");
+    // Setting numCameras_ variable to reflect number of camera objects used.
+    // numCameras_ variable is used in other methods where it means size of cams list.
+    numCameras_ = cams.size();
+    // setting PUBLISH_CAM_INFO_ to true so export to ros method can publish it_.advertiseCamera msg with zero intrisics and distortion coeffs.
+    PUBLISH_CAM_INFO_ = true;
 }
 
 
@@ -567,7 +578,7 @@ void acquisition::Capture::read_parameters() {
     if (PUBLISH_CAM_INFO_)
         ROS_INFO("  Camera coeffs provided, camera info messges will be published.");
     else
-        ROS_INFO("  Camera coeffs not provided correctly, camera info messges will not be published.");
+        ROS_WARN("  Camera coeffs not provided correctly, camera info messges intrinsics and distortion coeffs will be published with zeros.");
 
 //    ROS_ASSERT_MSG(my_list.getType()
 //    int num_ids = cam_id_vec.size();
