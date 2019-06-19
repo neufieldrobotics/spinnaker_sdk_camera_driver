@@ -126,6 +126,7 @@ namespace acquisition {
         bool EXPORT_TO_ROS_;
         bool MAX_RATE_SAVE_;
         bool PUBLISH_CAM_INFO_;
+        uint64_t SPINNAKER_GET_NEXT_IMAGE_TIMEOUT_;
 
         // grid view related variables
         bool GRID_CREATED_;

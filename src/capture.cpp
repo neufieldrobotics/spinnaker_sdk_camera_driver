@@ -82,6 +82,7 @@ acquisition::Capture::Capture(): it_(nh_), nh_pvt_ ("~") {
     init_delay_ = 1; 
     master_fps_ = 20.0;
     binning_ = 1;
+    SPINNAKER_GET_NEXT_IMAGE_TIMEOUT_ = 2000;
     todays_date_ = todays_date();
     
     dump_img_ = "dump" + ext_;
@@ -162,6 +163,7 @@ acquisition::Capture::Capture(ros::NodeHandle nodehandl, ros::NodeHandle private
     init_delay_ = 1;
     master_fps_ = 20.0;
     binning_ = 1;
+    SPINNAKER_GET_NEXT_IMAGE_TIMEOUT_ = 2000;
     todays_date_ = todays_date();
 
     dump_img_ = "dump" + ext_;
@@ -231,7 +233,10 @@ void acquisition::Capture::load_cameras() {
         for (int i=0; i<numCameras_; i++) {
         
             acquisition::Camera cam(camList_.GetByIndex(i));
-            
+            if (!EXTERNAL_TRIGGER_){
+                cam.setGetNextImageTimeout(SPINNAKER_GET_NEXT_IMAGE_TIMEOUT_);  // set to finite number when not using external triggering
+            }
+
             if (cam.get_id().compare(cam_ids_[j]) == 0) {
                 current_cam_found=true;
                 if (cam.get_id().compare(master_cam_id_) == 0) {
@@ -1023,7 +1028,7 @@ void acquisition::Capture::run_soft_trig() {
         }
     }
     catch(const std::exception &e){
-        ROS_FATAL_STREAM("Excption: "<<e.what());
+        ROS_FATAL_STREAM("Exception: "<<e.what());
     }
     catch(...){
         ROS_FATAL_STREAM("Some unknown exception occured. \v Exiting gracefully, \n  possible reason could be Camera Disconnection...");
