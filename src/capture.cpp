@@ -489,6 +489,15 @@ void acquisition::Capture::read_parameters() {
             }else ROS_INFO("    Frames will be recorded until user termination");
         }else ROS_WARN("    'frames' Parameter not set, using defult behavior, frames will be recorded until user termination");
     }
+    
+    if (nh_pvt_.hasParam("tf_prefix")){
+        nh_pvt_.param<std::string>("tf_prefix", tf_prefix_, "");
+        ROS_INFO_STREAM("  tf_prefix set to: "<<tf_prefix_);
+    }
+    else ROS_WARN("  'tf_prefix' Parameter not set, using default behavior tf_prefix=" " ");
+
+    
+
 
     bool intrinsics_list_provided = false;
     XmlRpc::XmlRpcValue intrinsics_list;
@@ -777,9 +786,13 @@ void acquisition::Capture::export_to_ROS() {
     double t = ros::Time::now().toSec();
     std_msgs::Header img_msg_header;
     img_msg_header.stamp = mesg.header.stamp;
+    string frame_id_prefix;
+    if (tf_prefix_.compare("") != 0)
+        frame_id_prefix = tf_prefix_ +"/";
+    else frame_id_prefix="";
 
     for (unsigned int i = 0; i < numCameras_; i++) {
-        img_msg_header.frame_id = "cam_"+to_string(i)+"_optical_frame";
+        img_msg_header.frame_id = frame_id_prefix + "cam_"+to_string(i)+"_optical_frame";
 
         if(color_)
             img_msgs[i]=cv_bridge::CvImage(img_msg_header, "bgr8", frames_[i]).toImageMsg();
@@ -788,6 +801,7 @@ void acquisition::Capture::export_to_ROS() {
 
         if (PUBLISH_CAM_INFO_){
             cam_info_msgs[i]->header.stamp = mesg.header.stamp;
+            cam_info_msgs[i]->header.frame_id = frame_id_prefix + "cam_"+to_string(i)+"_optical_frame";
         }
         camera_image_pubs[i].publish(img_msgs[i],cam_info_msgs[i]);
 /*
