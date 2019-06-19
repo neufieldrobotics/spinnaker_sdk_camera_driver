@@ -266,7 +266,7 @@ void acquisition::Capture::load_cameras() {
                 nh_pvt_.getParam("image_height", image_height);
                 nh_pvt_.getParam("image_width", image_width);
                 nh_pvt_.getParam("distortion_model", distortion_model);
-                ci_msg->header.frame_id = "cam_"+to_string(j)+"_optical_frame";
+                //ci_msg->header.frame_id = "cam_"+to_string(j)+"_optical_frame";
                 // full resolution image_size
                 ci_msg->height = image_height;
                 ci_msg->width = image_width;
@@ -322,7 +322,7 @@ void acquisition::Capture::load_cameras() {
         if (!current_cam_found) ROS_WARN_STREAM("   Camera "<<cam_ids_[j]<<" not detected!!!");
     }
     ROS_ASSERT_MSG(cams.size(),"None of the connected cameras are in the config list!");
-    
+
     ROS_ASSERT_MSG(master_set,"The camera supposed to be the master isn't connected!");
     // Setting numCameras_ variable to reflect number of camera objects used.
     // numCameras_ variable is used in other methods where it means size of cams list.
@@ -813,23 +813,15 @@ void acquisition::Capture::export_to_ROS() {
 
     for (unsigned int i = 0; i < numCameras_; i++) {
         img_msg_header.frame_id = frame_id_prefix + "cam_"+to_string(i)+"_optical_frame";
+        cam_info_msgs[i]->header = img_msg_header;
 
         if(color_)
             img_msgs[i]=cv_bridge::CvImage(img_msg_header, "bgr8", frames_[i]).toImageMsg();
         else
             img_msgs[i]=cv_bridge::CvImage(img_msg_header, "mono8", frames_[i]).toImageMsg();
 
-        if (PUBLISH_CAM_INFO_){
-            cam_info_msgs[i]->header.stamp = mesg.header.stamp;
-            cam_info_msgs[i]->header.frame_id = frame_id_prefix + "cam_"+to_string(i)+"_optical_frame";
-        }
         camera_image_pubs[i].publish(img_msgs[i],cam_info_msgs[i]);
-/*
-        if (PUBLISH_CAM_INFO_){
-        cam_info_msgs[i].header.stamp = mesg.header.stamp;
-        camera_info_pubs[i].publish(cam_info_msgs[i]);
-        }
-    */
+
     }
     export_to_ROS_time_ = ros::Time::now().toSec()-t;;
 }
