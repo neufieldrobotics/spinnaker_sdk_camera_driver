@@ -14,8 +14,7 @@ The pre-requisites for this repo include:
 * ros-kinetic-cv-bridge
 * ros-kinetic-image-transport
 
-# Incase of x86_64 or x86_32 architecture, install the following:
-* libunwind-dev
+**Incase of x86_64 or x86_32 architecture, also install *libunwind-dev* **
 
 ```bash
 # after installing spinnaker verify that you can run your cameras with SpinView
@@ -66,6 +65,8 @@ All the parameters can be set via the launch file or via the yaml config_file.  
   Should color images be used (only works on models that support color images)
 * ~exposure_time (int, default: 0, 0:auto)  
   Exposure setting for cameras, also available as dynamic reconfiguarble parameter.
+  * ~external_trigger (bool, default: false)  
+  Camera triggering setting when using an external trigger.  In this mode none of the cmaera is set as a master camera. All cameras are setup to use external trigger.  In this mode the main loop runs at rate set by soft_framerate, so if the external trigger rate is higher than the soft_framerate, the buffer will get filled and images will have a lag. Also in this mode, the getnextimage timeout is set to infinite so that the node dosen't die if a trigger is not received for a while.
 * ~target_grey_value (double, default: 0 , 0:Continous/auto)
   Setting target_grey_value > 4 (min:4 , max:99) will turn AutoExposureTargetGreyValueAuto to 'off' and set AutoExposureTargetGreyValue to target_grey_value. Also available as dynamic reconfigurable parameter. see below in Dynamic reconfigurable parameter section.
 * ~frames (int, default: 50)  
@@ -78,7 +79,7 @@ All the parameters can be set via the launch file or via the yaml config_file.  
   Flag whether images should be saved or not (via opencv mat objects to disk)
 * ~save_path (string, default: "\~/projects/data")  
   Location to save the image data
-* \~save_type (string, default: "bmp")  
+* ~save_type (string, default: "bmp")  
   Type of file type to save to when saving images locally: binary, tiff, bmp, jpeg etc.
 * ~soft_framerate (int, default: 20)  
   When hybrid software triggering is used, this controls the FPS, 0=as fast as possible
