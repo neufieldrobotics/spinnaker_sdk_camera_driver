@@ -21,8 +21,7 @@ acquisition::Camera::Camera(CameraPtr pCam) {
     frameID_ = -1;
     MASTER_ = false;
     timestamp_ = 0;
-    GET_NEXT_IMAGE_TIMEOUT_ = 2000;
-    
+    GET_NEXT_IMAGE_TIMEOUT_ = EVENT_TIMEOUT_INFINITE;
 }
 
 void acquisition::Camera::init() {
@@ -38,7 +37,6 @@ void acquisition::Camera::deinit() {
 }
 
 ImagePtr acquisition::Camera::grab_frame() {
-
     ImagePtr pResultImage = pCam_->GetNextImage(GET_NEXT_IMAGE_TIMEOUT_);
     // Check if the Image is complete
 
@@ -235,7 +233,6 @@ void acquisition::Camera::adcBitDepth(gcstring bitDep) {
 }
 
 void acquisition::Camera::setBufferSize(int numBuf) {
-
     INodeMap & sNodeMap = pCam_->GetTLStreamNodeMap();
     CIntegerPtr StreamNode = sNodeMap.GetNode("StreamDefaultBufferCount");
     int64_t bufferCount = StreamNode->GetValue();

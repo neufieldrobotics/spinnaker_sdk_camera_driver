@@ -70,6 +70,7 @@ acquisition::Capture::Capture(): it_(nh_), nh_pvt_ ("~") {
     LIVE_ = false;
     TIME_BENCHMARK_ = false;
     MASTER_TIMESTAMP_FOR_ALL_ = true;    
+    EXTERNAL_TRIGGER_ = false;
     EXPORT_TO_ROS_ = false;
     PUBLISH_CAM_INFO_ = false;
     SAVE_ = false;
@@ -81,6 +82,7 @@ acquisition::Capture::Capture(): it_(nh_), nh_pvt_ ("~") {
     init_delay_ = 1; 
     master_fps_ = 20.0;
     binning_ = 1;
+    SPINNAKER_GET_NEXT_IMAGE_TIMEOUT_ = 2000;
     todays_date_ = todays_date();
     
     dump_img_ = "dump" + ext_;
@@ -149,6 +151,7 @@ acquisition::Capture::Capture(ros::NodeHandle nodehandl, ros::NodeHandle private
     LIVE_ = false;
     TIME_BENCHMARK_ = false;
     MASTER_TIMESTAMP_FOR_ALL_ = true;
+    EXTERNAL_TRIGGER_ = false;
     EXPORT_TO_ROS_ = false;
     PUBLISH_CAM_INFO_ = false;
     SAVE_ = false;
@@ -160,6 +163,7 @@ acquisition::Capture::Capture(ros::NodeHandle nodehandl, ros::NodeHandle private
     init_delay_ = 1;
     master_fps_ = 20.0;
     binning_ = 1;
+    SPINNAKER_GET_NEXT_IMAGE_TIMEOUT_ = 2000;
     todays_date_ = todays_date();
 
     dump_img_ = "dump" + ext_;
@@ -229,7 +233,10 @@ void acquisition::Capture::load_cameras() {
         for (int i=0; i<numCameras_; i++) {
         
             acquisition::Camera cam(camList_.GetByIndex(i));
-            
+            if (!EXTERNAL_TRIGGER_){
+                cam.setGetNextImageTimeout(SPINNAKER_GET_NEXT_IMAGE_TIMEOUT_);  // set to finite number when not using external triggering
+            }
+
             if (cam.get_id().compare(cam_ids_[j]) == 0) {
                 current_cam_found=true;
                 if (cam.get_id().compare(master_cam_id_) == 0) {
@@ -315,12 +322,16 @@ void acquisition::Capture::load_cameras() {
         if (!current_cam_found) ROS_WARN_STREAM("   Camera "<<cam_ids_[j]<<" not detected!!!");
     }
     ROS_ASSERT_MSG(cams.size(),"None of the connected cameras are in the config list!");
+    
     ROS_ASSERT_MSG(master_set,"The camera supposed to be the master isn't connected!");
     // Setting numCameras_ variable to reflect number of camera objects used.
     // numCameras_ variable is used in other methods where it means size of cams list.
     numCameras_ = cams.size();
     // setting PUBLISH_CAM_INFO_ to true so export to ros method can publish it_.advertiseCamera msg with zero intrisics and distortion coeffs.
     PUBLISH_CAM_INFO_ = true;
+
+    if (!EXTERNAL_TRIGGER_)
+		ROS_ASSERT_MSG(master_set,"The camera supposed to be the master isn't connected!");
 }
 
 
@@ -374,9 +385,17 @@ void acquisition::Capture::read_parameters() {
         for (int i=0; i<cam_ids_.size(); i++)
             cam_names_.push_back(cam_ids_[i]);
     }
+    
+    if (nh_pvt_.getParam("external_trigger", EXTERNAL_TRIGGER_)){
+        ROS_INFO("  External trigger: %s",EXTERNAL_TRIGGER_?"true":"false");
+    }
+        else ROS_WARN("  'external_trigger' Parameter not set, using default behavior external_trigger=%s",EXTERNAL_TRIGGER_?"true":"false");
 
+	// Unless external trigger is being used, a master cam needs to be specified
     int mcam_int;
-    ROS_ASSERT_MSG(nh_pvt_.getParam("master_cam", mcam_int),"master_cam is required!");
+    if (!EXTERNAL_TRIGGER_){
+		ROS_ASSERT_MSG(nh_pvt_.getParam("master_cam", mcam_int),"master_cam is required!");
+	
     master_cam_id_=to_string(mcam_int);
     bool found = false;
     for (int i=0; i<cam_ids_.size(); i++) {
@@ -384,7 +403,8 @@ void acquisition::Capture::read_parameters() {
             found = true;
     }
     ROS_ASSERT_MSG(found,"Specified master cam is not in the cam_ids list!");
-    
+	}
+	
     if (nh_pvt_.getParam("utstamps", MASTER_TIMESTAMP_FOR_ALL_)){
         MASTER_TIMESTAMP_FOR_ALL_ = !MASTER_TIMESTAMP_FOR_ALL_;
         ROS_INFO("  Unique time stamps for each camera: %s",!MASTER_TIMESTAMP_FOR_ALL_?"true":"false");
@@ -853,8 +873,8 @@ void acquisition::Capture::save_binary_frames(int dump) {
 
 void acquisition::Capture::get_mat_images() {
     //ros time stamp creation
-    mesg.header.stamp = ros::Time::now();
-    mesg.time = ros::Time::now();
+    //mesg.header.stamp = ros::Time::now();
+    //mesg.time = ros::Time::now();
     double t = ros::Time::now().toSec();
     
     ostringstream ss;
@@ -883,6 +903,8 @@ void acquisition::Capture::get_mat_images() {
             ss << cams[i].get_frame_id() << ", ";
         
     }
+    mesg.header.stamp = ros::Time::now();
+    mesg.time = ros::Time::now();
     string message = ss.str();
     ROS_DEBUG_STREAM(message);
 
@@ -905,7 +927,10 @@ void acquisition::Capture::run_soft_trig() {
 
     int count = 0;
     
-    cams[MASTER_CAM_].trigger();
+    if (!EXTERNAL_TRIGGER_) {
+        cams[MASTER_CAM_].trigger();
+    }
+    
     get_mat_images();
     if (SAVE_) {
         count++;
@@ -971,7 +996,9 @@ void acquisition::Capture::run_soft_trig() {
 
             // Call update functions
             if (!MANUAL_TRIGGER_) {
-                cams[MASTER_CAM_].trigger();
+                if (!EXTERNAL_TRIGGER_) {
+                    cams[MASTER_CAM_].trigger();
+                }
                 get_mat_images();
             }
 
@@ -1015,7 +1042,7 @@ void acquisition::Capture::run_soft_trig() {
         }
     }
     catch(const std::exception &e){
-        ROS_FATAL_STREAM("Excption: "<<e.what());
+        ROS_FATAL_STREAM("Exception: "<<e.what());
     }
     catch(...){
         ROS_FATAL_STREAM("Some unknown exception occured. \v Exiting gracefully, \n  possible reason could be Camera Disconnection...");
@@ -1195,10 +1222,10 @@ void acquisition::Capture::run_mt() {
 }
 
 void acquisition::Capture::run() {
-    if(!MAX_RATE_SAVE_)
-        run_soft_trig();
-    else
-        run_mt();
+    if (MAX_RATE_SAVE_)
+		run_mt();
+	else
+		run_soft_trig();
 }
 
 std::string acquisition::Capture::todays_date()
