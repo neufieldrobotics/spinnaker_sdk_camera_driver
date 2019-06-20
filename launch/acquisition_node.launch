@@ -21,6 +21,8 @@
   <arg name="to_ros"            default="true"	doc="Flag whether images should be published to ROS" />
   <arg name="utstamps"          default="false"	doc="Flag whether each image should have Unique timestamps vs the master cams time stamp for all" />
   <arg name="max_rate_save"     default="false"	doc="Flag for max rate mode which is when the master triggerst the slaves and saves images at maximum rate possible" />
+  <arg name="flip_horizontal"   default="false"	doc="Flag to flip image horizontally on camera (mirror image) enumeration reverseX" />
+  <arg name="flip_vertical"   default="false"	doc="Flag to flip image vertically on camera (mirror image) enumeration reverseY" />
   <arg name="config_file"       default="$(find spinnaker_sdk_camera_driver)/params/test_params.yaml" doc="File specifying the parameters of the camera_array"/>
   
   <!-- acquisiton node params-->
@@ -50,6 +52,8 @@
     <param name="utstamps"          value="$(arg utstamps)" />
     <param name="to_ros"            value="$(arg to_ros)"/>
     <param name="max_rate_save"     value="$(arg max_rate_save)"/>
+    <param name="flip_horizontal"   value="$(arg flip_horizontal)" />
+    <param name="flip_vertical"     value="$(arg flip_vertical)" />
     <param name="tf_prefix"         value="$(arg tf_prefix)" />
 
   </node>    

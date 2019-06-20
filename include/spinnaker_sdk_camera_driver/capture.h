@@ -100,6 +100,8 @@ namespace acquisition {
         float master_fps_;
         int binning_;
         bool color_;
+        bool flip_horizontal_;
+        bool flip_vertical_;
         string dump_img_;
         string ext_;
         float exposure_time_;

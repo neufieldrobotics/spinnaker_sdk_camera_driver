@@ -78,6 +78,8 @@ acquisition::Capture::Capture(): it_(nh_), nh_pvt_ ("~") {
     nframes_ = -1;
     FIXED_NUM_FRAMES_ = false;
     MAX_RATE_SAVE_ = false;
+    flip_horizontal_ = false;
+    flip_vertical_ = false;
     skip_num_ = 20; 
     init_delay_ = 1; 
     master_fps_ = 20.0;
@@ -160,6 +162,8 @@ acquisition::Capture::Capture(ros::NodeHandle nodehandl, ros::NodeHandle private
     nframes_ = -1;
     FIXED_NUM_FRAMES_ = false;
     MAX_RATE_SAVE_ = false;
+    flip_horizontal_ = false;
+    flip_vertical_ = false;    
     skip_num_ = 20;
     init_delay_ = 1;
     master_fps_ = 20.0;
@@ -415,6 +419,14 @@ void acquisition::Capture::read_parameters() {
     if (nh_pvt_.getParam("color", color_)) 
         ROS_INFO("  color set to: %s",color_?"true":"false");
         else ROS_WARN("  'color' Parameter not set, using default behavior color=%s",color_?"true":"false");
+        
+    if (nh_pvt_.getParam("flip_horizontal", flip_horizontal_))
+        ROS_INFO("  flip_horizontal set to: %s",flip_horizontal_?"true":"false");
+        else ROS_WARN("  'flip_horizontal' Parameter not set, using default behavior flip_horizontal=%s",flip_horizontal_?"true":"false");
+
+    if (nh_pvt_.getParam("flip_vertical", flip_vertical_))
+        ROS_INFO("  flip_vertical set to: %s",flip_vertical_?"true":"false");
+        else ROS_WARN("  'flip_vertical' Parameter not set, using default behavior flip_vertical=%s",flip_vertical_?"true":"false");
 
     if (nh_pvt_.getParam("to_ros", EXPORT_TO_ROS_)) 
         ROS_INFO("  Exporting images to ROS: %s",EXPORT_TO_ROS_?"true":"false");
@@ -650,8 +662,10 @@ void acquisition::Capture::init_cameras(bool soft = false) {
                 cams[i].set_color(color_);
                 cams[i].setIntValue("BinningHorizontal", binning_);
                 cams[i].setIntValue("BinningVertical", binning_);
-
                 cams[i].setEnumValue("ExposureMode", "Timed");
+                cams[i].setBoolValue("ReverseX", flip_horizontal_);
+                cams[i].setBoolValue("ReverseY", flip_vertical_);
+                
                 if (exposure_time_ > 0) { 
                     cams[i].setEnumValue("ExposureAuto", "Off");
                     cams[i].setFloatValue("ExposureTime", exposure_time_);
@@ -682,7 +696,7 @@ void acquisition::Capture::init_cameras(bool soft = false) {
                       cams[i].setEnumValue("LineMode", "Output");
                       cams[i].setBoolValue("AcquisitionFrameRateEnable", false);
                       //cams[i].setFloatValue("AcquisitionFrameRate", 170);
-                    }else{
+                    } else{
                       cams[i].setEnumValue("TriggerMode", "On");
                       cams[i].setEnumValue("LineSelector", "Line2");
                       cams[i].setEnumValue("LineMode", "Output");
