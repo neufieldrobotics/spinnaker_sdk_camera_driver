@@ -64,6 +64,8 @@ namespace acquisition {
         bool is_master() { return MASTER_; }
         void set_color(bool flag) { COLOR_ = flag; }
         void setGetNextImageTimeout(uint64_t get_next_image_timeout) { GET_NEXT_IMAGE_TIMEOUT_ = get_next_image_timeout; }
+        bool verifyBinning(int binningDesired);
+        void calibrationParamsTest(int calibrationWidth, int calibrationHeight);
         
     private:
 

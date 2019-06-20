@@ -104,6 +104,7 @@ acquisition::Capture::Capture(): it_(nh_), nh_pvt_ ("~") {
     CAM_DIRS_CREATED_ = false;
 
     GRID_CREATED_ = false;
+    VERIFY_BINNING_ = false;
 
 
     //read_settings(config_file);
@@ -185,6 +186,7 @@ acquisition::Capture::Capture(ros::NodeHandle nodehandl, ros::NodeHandle private
     CAM_DIRS_CREATED_ = false;
 
     GRID_CREATED_ = false;
+    VERIFY_BINNING_ = false;
 
 
     //read_settings(config_file);
@@ -227,7 +229,6 @@ void acquisition::Capture::load_cameras() {
     bool master_set = false;
     int cam_counter = 0;
     
-    
     for (int j=0; j<cam_ids_.size(); j++) {
         bool current_cam_found=false;
         for (int i=0; i<numCameras_; i++) {
@@ -260,16 +261,16 @@ void acquisition::Capture::load_cameras() {
                 img_msgs.push_back(sensor_msgs::ImagePtr());
 
                 sensor_msgs::CameraInfoPtr ci_msg(new sensor_msgs::CameraInfo());
-                int image_width = 0;
-                int image_height = 0;
-                std::string distortion_model = ""; 
-                nh_pvt_.getParam("image_height", image_height);
-                nh_pvt_.getParam("image_width", image_width);
-                nh_pvt_.getParam("distortion_model", distortion_model);
-                //ci_msg->header.frame_id = "cam_"+to_string(j)+"_optical_frame";
+                //int image_width = 0;
+                //int image_height = 0;
+                nh_pvt_.getParam("image_height", image_height_);
+                nh_pvt_.getParam("image_width", image_width_);
                 // full resolution image_size
-                ci_msg->height = image_height;
-                ci_msg->width = image_width;
+                ci_msg->height = image_height_;
+                ci_msg->width = image_width_;
+                                
+                std::string distortion_model = ""; 
+                nh_pvt_.getParam("distortion_model", distortion_model);
                 // distortion
                 ci_msg->distortion_model = distortion_model;
                 // binning
@@ -316,7 +317,7 @@ void acquisition::Capture::load_cameras() {
                 cam_info_msgs.push_back(ci_msg);
 
                 cam_counter++;
-            
+                
             }
         }
         if (!current_cam_found) ROS_WARN_STREAM("   Camera "<<cam_ids_[j]<<" not detected!!!");
@@ -932,6 +933,18 @@ void acquisition::Capture::run_soft_trig() {
             save_mat_frames(0);
     }
 
+    if(!VERIFY_BINNING_){
+    // Gets called only once, when first image is being triggered
+        for (unsigned int i = 0; i < numCameras_; i++) {
+            //verify if binning is set successfully
+            ROS_ASSERT_MSG(cams[i].verifyBinning(binning_), " Failed to set Binning= %d, could be either due to Invalid binning value, try changing binning value or due to spinnaker api bug - failing to set lower binning than previously set value - solution: unplug usb camera and re-plug it back and run to node with desired valid binning", binning_);
+            // warn if full sensor resolution is not same as calibration resolution
+            cams[i].calibrationParamsTest(image_width_,image_height_);
+        }
+    VERIFY_BINNING_ = true;
+    }
+
+
     ros::Rate ros_rate(soft_framerate_);
     try{
         while( ros::ok() ) {
@@ -1010,7 +1023,7 @@ void acquisition::Capture::run_soft_trig() {
                     break;
                 }
             }
-            
+
             if (EXPORT_TO_ROS_) export_to_ROS();
             //cams[MASTER_CAM_].targetGreyValueTest();
             // ros publishing messages
