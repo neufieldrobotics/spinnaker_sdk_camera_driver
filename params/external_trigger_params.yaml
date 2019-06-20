@@ -5,6 +5,12 @@ cam_aliases:
 skip: 20
 delay: 1.0
 
+flip_horizontal:
+- false
+
+flip_vertical:
+- false
+
 # Assign all the follwing via launch file to prevent confusion and conflict
 
 #save_path: ~/projects/data

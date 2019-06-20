@@ -87,6 +87,8 @@ namespace acquisition {
         vector<vector<double>> rect_coeff_vec_;
         vector<vector<double>> proj_coeff_vec_;
         vector<string> imageNames;
+        vector<bool> flip_horizontal_vec_;
+        vector<bool> flip_vertical_vec_;
            
         string path_;
         string todays_date_;

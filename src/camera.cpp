@@ -184,8 +184,7 @@ void acquisition::Camera::setBoolValue(string setting, bool val) {
     if (!IsAvailable(ptr) || !IsWritable(ptr)) {
         ROS_FATAL_STREAM("Unable to set " << setting << " to " << val << " (ptr retrieval). Aborting...");
     }
-    if (val) ptr->SetValue("True");
-		else ptr->SetValue("False");
+    ptr->SetValue(val);
 
     ROS_DEBUG_STREAM(setting << " set to " << val);
     
