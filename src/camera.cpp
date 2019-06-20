@@ -316,3 +316,16 @@ void acquisition::Camera::exposureTest() {
     ROS_DEBUG_STREAM("Exposure Time: "<<expTime<<endl);
 
 }
+bool acquisition::Camera::verifyBinning(int binningDesired) {
+    int actualBinningX =  (pCam_ ->SensorWidth())/(pCam_ ->Width());
+    int actualBinningY =  (pCam_ ->SensorHeight())/(pCam_ ->Height());
+    if (binningDesired == actualBinningX) return true;
+    else return false;
+}
+
+void acquisition::Camera::calibrationParamsTest(int calibrationWidth, int calibrationHeight) {
+    if ( (pCam_ ->SensorWidth()) != calibrationWidth )
+        ROS_WARN_STREAM(" Looks like your calibration is not done at full Sensor Resolution for cam_id = "<<get_id()<<" , Sensor_Width = "<<(pCam_ ->SensorWidth()) <<" given cameraInfo params:width = "<<calibrationWidth);
+    if ( (pCam_ ->SensorHeight()) != calibrationHeight )
+        ROS_WARN_STREAM(" Looks like your calibration is not done at full Sensor Resolution for cam_id = "<<get_id()<<" , Sensor_Height= "<<(pCam_ ->SensorHeight()) <<" given cameraInfo params:height = "<<calibrationHeight);
+}

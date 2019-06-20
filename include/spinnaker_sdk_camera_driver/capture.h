@@ -110,6 +110,8 @@ namespace acquisition {
         
         int MASTER_CAM_;
         int CAM_; // active cam during live
+        int image_width_;
+        int image_height_;
 
         bool FIXED_NUM_FRAMES_;
         bool TIME_BENCHMARK_;
@@ -126,6 +128,7 @@ namespace acquisition {
         bool EXPORT_TO_ROS_;
         bool MAX_RATE_SAVE_;
         bool PUBLISH_CAM_INFO_;
+        bool VERIFY_BINNING_;
         uint64_t SPINNAKER_GET_NEXT_IMAGE_TIMEOUT_;
 
         // grid view related variables
