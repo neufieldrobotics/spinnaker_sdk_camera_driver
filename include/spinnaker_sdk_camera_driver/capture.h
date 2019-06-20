@@ -132,6 +132,12 @@ namespace acquisition {
         bool PUBLISH_CAM_INFO_;
         bool VERIFY_BINNING_;
         uint64_t SPINNAKER_GET_NEXT_IMAGE_TIMEOUT_;
+        
+        bool region_of_interest_set_;
+        int region_of_interest_width_;
+        int region_of_interest_height_;
+        int region_of_interest_x_offset_;
+        int region_of_interest_y_offset_;
 
         // grid view related variables
         bool GRID_CREATED_;

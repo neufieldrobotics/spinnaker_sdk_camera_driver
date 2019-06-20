@@ -78,6 +78,7 @@ acquisition::Capture::Capture(): it_(nh_), nh_pvt_ ("~") {
     nframes_ = -1;
     FIXED_NUM_FRAMES_ = false;
     MAX_RATE_SAVE_ = false;
+    region_of_interest_set_ = false;
     skip_num_ = 20; 
     init_delay_ = 1; 
     master_fps_ = 20.0;
@@ -159,7 +160,8 @@ acquisition::Capture::Capture(ros::NodeHandle nodehandl, ros::NodeHandle private
     SAVE_BIN_ = false;
     nframes_ = -1;
     FIXED_NUM_FRAMES_ = false;
-    MAX_RATE_SAVE_ = false;    
+    MAX_RATE_SAVE_ = false;
+    region_of_interest_set_ = false;
     skip_num_ = 20;
     init_delay_ = 1;
     master_fps_ = 20.0;
@@ -187,7 +189,7 @@ acquisition::Capture::Capture(ros::NodeHandle nodehandl, ros::NodeHandle private
 
     GRID_CREATED_ = false;
     VERIFY_BINNING_ = false;
-
+    
 
     //read_settings(config_file);
     read_parameters();
@@ -276,6 +278,14 @@ void acquisition::Capture::load_cameras() {
                 // binning
                 ci_msg->binning_x = binning_;
                 ci_msg->binning_y = binning_;
+                
+                if (region_of_interest_set_ && (region_of_interest_width_!=0 || region_of_interest_height_!=0)){
+                    ci_msg->roi.do_rectify = true;
+                    ci_msg->roi.width = region_of_interest_width_;
+                    ci_msg->roi.height = region_of_interest_height_;
+                    ci_msg->roi.x_offset = region_of_interest_x_offset_;
+                    ci_msg->roi.y_offset = region_of_interest_y_offset_;
+                }
             
                 if (PUBLISH_CAM_INFO_){
                     ci_msg->D = distortion_coeff_vec_[j];
@@ -545,8 +555,26 @@ void acquisition::Capture::read_parameters() {
     }
     else ROS_WARN("  'tf_prefix' Parameter not set, using default behavior tf_prefix=" " ");
 
-    
-
+    if (nh_pvt_.hasParam("region_of_interest")){
+        region_of_interest_set_ = true;
+        if (!nh_pvt_.getParam("region_of_interest/width", region_of_interest_width_)){
+            region_of_interest_set_ = false;
+            }
+        if (!nh_pvt_.getParam("region_of_interest/height", region_of_interest_height_)){
+            region_of_interest_set_ = false;
+            }
+        if (!nh_pvt_.getParam("region_of_interest/x_offset", region_of_interest_x_offset_)){
+            region_of_interest_set_ = false;
+            }
+        if (!nh_pvt_.getParam("region_of_interest/y_offset", region_of_interest_y_offset_)){
+            region_of_interest_set_ = false;
+            }
+        
+        if (region_of_interest_set_){
+            ROS_INFO("  Region of Interest set to width: %d\theight: %d\toffset_x: %d offset_y: %d",
+                     region_of_interest_width_, region_of_interest_height_, region_of_interest_x_offset_, region_of_interest_y_offset_);
+        } else ROS_ERROR("  'region_of_interest' Parameter found but not configured correctly, NOT BEING USED");
+    } else ROS_INFO_STREAM("  'region of interest' not set using full resolution");
 
     bool intrinsics_list_provided = false;
     XmlRpc::XmlRpcValue intrinsics_list;
@@ -677,10 +705,19 @@ void acquisition::Capture::init_cameras(bool soft = false) {
 
                 cams[i].set_color(color_);
                 cams[i].setIntValue("BinningHorizontal", binning_);
-                cams[i].setIntValue("BinningVertical", binning_);
+                cams[i].setIntValue("BinningVertical", binning_);                
                 cams[i].setEnumValue("ExposureMode", "Timed");
                 cams[i].setBoolValue("ReverseX", flip_horizontal_vec_[i]);
                 cams[i].setBoolValue("ReverseY", flip_vertical_vec_[i]);
+                
+                if (region_of_interest_set_){
+                    if (region_of_interest_width_ != 0)
+                        cams[i].setIntValue("Width", region_of_interest_width_);
+                    if (region_of_interest_height_ != 0)
+                        cams[i].setIntValue("Height", region_of_interest_height_);
+                    cams[i].setIntValue("OffsetX", region_of_interest_x_offset_);
+                    cams[i].setIntValue("OffsetY", region_of_interest_y_offset_);
+                }
                 
                 if (exposure_time_ > 0) { 
                     cams[i].setEnumValue("ExposureAuto", "Off");
@@ -967,7 +1004,9 @@ void acquisition::Capture::run_soft_trig() {
     // Gets called only once, when first image is being triggered
         for (unsigned int i = 0; i < numCameras_; i++) {
             //verify if binning is set successfully
-            ROS_ASSERT_MSG(cams[i].verifyBinning(binning_), " Failed to set Binning= %d, could be either due to Invalid binning value, try changing binning value or due to spinnaker api bug - failing to set lower binning than previously set value - solution: unplug usb camera and re-plug it back and run to node with desired valid binning", binning_);
+            if (!region_of_interest_set_){
+                ROS_ASSERT_MSG(cams[i].verifyBinning(binning_), " Failed to set Binning= %d, could be either due to Invalid binning value, try changing binning value or due to spinnaker api bug - failing to set lower binning than previously set value - solution: unplug usb camera and re-plug it back and run to node with desired valid binning", binning_);
+            }
             // warn if full sensor resolution is not same as calibration resolution
             cams[i].calibrationParamsTest(image_width_,image_height_);
         }
