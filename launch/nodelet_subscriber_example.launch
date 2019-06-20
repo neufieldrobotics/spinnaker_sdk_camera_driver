@@ -1,5 +1,5 @@
 <launch>
-  <arg name="vision_nm" default="vision_nodelet_manager_uas" doc="name of the nodelet manager" />
+  <arg name="vision_nm" default="vision_nodelet_manager_example" doc="name of the nodelet manager" />
   <arg name="camera_tf_prefix" default="" />
 
   <include file="$(find spinnaker_sdk_camera_driver)/launch/acquisition.launch" >
