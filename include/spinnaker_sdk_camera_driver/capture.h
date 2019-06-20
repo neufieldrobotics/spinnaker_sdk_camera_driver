@@ -87,6 +87,8 @@ namespace acquisition {
         vector<vector<double>> rect_coeff_vec_;
         vector<vector<double>> proj_coeff_vec_;
         vector<string> imageNames;
+        vector<bool> flip_horizontal_vec_;
+        vector<bool> flip_vertical_vec_;
            
         string path_;
         string todays_date_;
@@ -100,8 +102,6 @@ namespace acquisition {
         float master_fps_;
         int binning_;
         bool color_;
-        bool flip_horizontal_;
-        bool flip_vertical_;
         string dump_img_;
         string ext_;
         float exposure_time_;

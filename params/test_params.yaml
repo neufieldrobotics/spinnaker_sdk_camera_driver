@@ -34,3 +34,9 @@ rectification_coeffs:
 
 projection_coeffs:
 - [913.700317, 0.000000, 953.448302, 0.000000, 0.000000, 1063.296631, 777.871993, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]
+
+flip_horizontal:
+- false
+
+flip_vertical:
+- false

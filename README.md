@@ -92,9 +92,12 @@ All the parameters can be set via the launch file or via the yaml config_file.  
 * ~max_rate_save (bool, default: false)  
   Flag for max rate mode which is when the master triggers the slaves and saves images at maximum rate possible.  This is the multithreaded mode
 * ~flip_horizontal (bool, default: false)  
-  Flag to flip image horizontally, this is not a rotate only a mirror image.
+  Flag to flip image horizontally on camera itself, this is not a rotate only a mirror image. This setting does enumeration: "reverseX". It should be specified for all cameras.
  * ~flip_vertical (bool, default: false)  
-  Flag to flip image vertically, this is not a rotate only a mirror image. If both horizontal and vertical flags are true, then it is equivalent to rotating 180deg.
+  Flag to flip image vertically on camera itself, this is not a rotate only a mirror image. This setting does enumeration: "reverseY". It should be specified for all cameras.
+  
+  If both horizontal and vertical flags are true, then it is equivalent to rotating 180deg.
+
 ### node/nodelet Specific Parameters
 * ~tf_prefix (string, default: "")  
   tf_prefix will be pre-fixed to (existing cam_*_optical_frame) frame id in ros Image msg and cameraInfo msg. default option doesn't add any prefix to frame id. eg: uas1/cam_0_optical_frame if tf_prefix:= uas1
