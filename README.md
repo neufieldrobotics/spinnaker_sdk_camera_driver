@@ -95,8 +95,8 @@ All the parameters can be set via the launch file or via the yaml config_file.  
   Flag to flip image horizontally on camera itself, this is not a rotate only a mirror image. This setting does enumeration: "reverseX". It should be specified for all cameras or can be left unspecified for all cameras for default behaviour.
  * ~flip_vertical (bool, default: false)  
   Flag to flip image vertically on camera itself, this is not a rotate only a mirror image. This setting does enumeration: "reverseY". It should be specified for all cameras or can be left unspecified for all cameras for default behaviour.
-  
-  If both horizontal and vertical flags are true, then it is equivalent to rotating 180deg.
+  * ~region_of_interest (dict, default = { width: 0,  height: 0, x_offset: 0, y_offset: 0 }
+  Specify the region of interest in the camera image as dict with width, height, x_offset and y_offset. Width and height specify size of the final image (should be smaller than sensor size). X and Y offsets specify the image origin. The offset plus image size should be smaller than the sensor size.
 
 ### node/nodelet Specific Parameters
 * ~tf_prefix (string, default: "")  
