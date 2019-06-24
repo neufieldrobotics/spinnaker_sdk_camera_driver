@@ -53,7 +53,7 @@ endif()
 
 add_message_files(
   FILES
-  SpinnakerImageNames.msg
+  SpinnakerImageInfo.msg
 )
 
 generate_dynamic_reconfigure_options(

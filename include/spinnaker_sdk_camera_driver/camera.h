@@ -28,8 +28,13 @@ namespace acquisition {
 
         ImagePtr grab_frame();
         Mat grab_mat_frame();
-        string get_time_stamp();
+        string get_time_stamp_str();
+        double get_exposure_time();
         int get_frame_id();
+
+        void enableTimestampCorrection();
+        void enableChunkData();
+        void enableChunkDataType(string);
 
         void setEnumValue(string, string);
         void setIntValue(string, int);
@@ -73,12 +78,14 @@ namespace acquisition {
         
         CameraPtr pCam_;
         int64_t timestamp_;
+        double exposure_time_;
         int frameID_;
         int lastFrameID_;
 
         bool COLOR_;
         bool MASTER_;
         uint64_t GET_NEXT_IMAGE_TIMEOUT_;
+        bool EXPOSURE_TIME_ADJUST_;
 
     };
 

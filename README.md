@@ -67,6 +67,10 @@ All the parameters can be set via the launch file or via the yaml config_file.  
   Exposure setting for cameras, also available as dynamic reconfiguarble parameter.
   * ~external_trigger (bool, default: false)  
   Camera triggering setting when using an external trigger.  In this mode, none of the cameras would be set as a master camera. All cameras are setup to use external trigger.  In this mode the main loop runs at rate set by soft_framerate, so if the external trigger rate is higher than the soft_framerate, the buffer will get filled and images will have a lag. Also in this mode, the getnextimage timeout is set to infinite so that the node dosen't die if a trigger is not received for a while.
+* ~publish_exposure_times (bool, default: false)
+  Turn on publishing of image exposure times to the "camera/exposure_times" topic, using the SpinnakerExposureTimes message type.
+* ~account_for_exposure_time (bool, default: false)
+  Change time stamps for published images to be at the center of their exposure window (starting time stamp + 1/2 exposure time).
 * ~target_grey_value (double, default: 0 , 0:Continous/auto)
   Setting target_grey_value > 4 (min:4 , max:99) will turn AutoExposureTargetGreyValueAuto to 'off' and set AutoExposureTargetGreyValue to target_grey_value. Also available as dynamic reconfigurable parameter. see below in Dynamic reconfigurable parameter section.
 * ~frames (int, default: 50)  
