@@ -21,7 +21,11 @@ acquisition::Camera::Camera(CameraPtr pCam) {
     frameID_ = -1;
     MASTER_ = false;
     timestamp_ = 0;
+    exposure_time_ = 0;
     GET_NEXT_IMAGE_TIMEOUT_ = EVENT_TIMEOUT_INFINITE;
+
+    // Flag set by enableExposureTimeAdjust
+    EXPOSURE_TIME_ADJUST_ = false;
 }
 
 void acquisition::Camera::init() {
@@ -46,7 +50,9 @@ ImagePtr acquisition::Camera::grab_frame() {
 
     } else {
 
-        timestamp_ = pResultImage->GetTimeStamp();
+        // Take time stamp from chunk data - timestamp is right before the image is captured
+        timestamp_ = pResultImage->GetChunkData().GetTimestamp();
+        exposure_time_ = static_cast<double>(pResultImage->GetChunkData().GetExposureTime());
     
         if (frameID_ >= 0) {
             lastFrameID_ = frameID_;
@@ -60,11 +66,16 @@ ImagePtr acquisition::Camera::grab_frame() {
     }
 
     ROS_DEBUG_STREAM("Grabbed frame from camera " << get_id() << " with timestamp " << timestamp_*1000);
-    return pResultImage;    
+    return pResultImage;
 }
 
-// Returns last timestamp
-string acquisition::Camera::get_time_stamp() {
+// Returns the latest exposure time in nanoseconds
+double acquisition::Camera::get_exposure_time() {
+    return 1000 * exposure_time_;
+}
+
+// Returns last timestamp as a string
+string acquisition::Camera::get_time_stamp_str() {
 
     stringstream ss;
     ss<<timestamp_*1000;
@@ -122,6 +133,62 @@ void acquisition::Camera::end_acquisition() {
     ROS_DEBUG_STREAM("End Acquisition...");
     pCam_->EndAcquisition();    
     
+}
+
+void acquisition::Camera::enableTimestampCorrection() {
+    EXPOSURE_TIME_ADJUST_ = true;
+}
+
+void acquisition::Camera::enableChunkData() {
+
+    INodeMap & nodeMap = pCam_->GetNodeMap();
+
+    // Retrieve chunk data node from node map
+    CBooleanPtr ptrChunkModeActive = nodeMap.GetNode("ChunkModeActive");
+    if (!IsAvailable(ptrChunkModeActive) || !IsWritable(ptrChunkModeActive))
+    {
+        ROS_FATAL_STREAM("Unable to activate chunk mode. Aborting...");
+    }
+    ptrChunkModeActive->SetValue(true);
+
+    ROS_DEBUG_STREAM("Chunk mode activated...");
+}
+
+void acquisition::Camera::enableChunkDataType(string type) {
+
+    INodeMap & nodeMap = pCam_->GetNodeMap();
+
+    CBooleanPtr ptrChunkModeActive = nodeMap.GetNode("ChunkModeActive");
+    if (!IsAvailable(ptrChunkModeActive)) {
+        ROS_FATAL_STREAM("Unable to confirm chunk mode is active. Aborting...");
+    }
+
+    if (!ptrChunkModeActive->GetValue()) {
+        ROS_FATAL_STREAM("Chunk Data must be enabled prior to enabling type: " << type << ". Aborting...");
+    }
+
+    CEnumerationPtr ptrChunkSelector = nodeMap.GetNode("ChunkSelector");
+    if (!IsAvailable(ptrChunkSelector) || !IsReadable(ptrChunkSelector))
+    {
+        ROS_FATAL_STREAM("Unable to retrieve chunk selector. Aborting...");
+    }
+
+    CEnumEntryPtr ptrChunkSelectorEntry = ptrChunkSelector->GetEntryByName(type.c_str());
+    if (!IsAvailable(ptrChunkSelectorEntry) || !IsReadable(ptrChunkSelectorEntry))
+    {
+        ROS_FATAL_STREAM("Unable to select chunk data type for enabling: " << type);
+    }
+
+    // Select the chunk data type to enable by its entry value
+    ptrChunkSelector->SetIntValue(ptrChunkSelectorEntry->GetValue());
+
+    // Retrieve boolean node for cooresponding chunk data type and enable
+    CBooleanPtr ptrChunkEnable = nodeMap.GetNode("ChunkEnable");
+    if (!IsAvailable(ptrChunkEnable) || !IsWritable(ptrChunkEnable))
+    {
+        ROS_FATAL_STREAM("Unable to enable chunk data type: " << type);
+    }
+    ptrChunkEnable->SetValue(true);
 }
 
 void acquisition::Camera::setEnumValue(string setting, string value) {

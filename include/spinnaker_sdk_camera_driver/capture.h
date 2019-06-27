@@ -14,7 +14,7 @@
 #include <dynamic_reconfigure/server.h>
 #include <spinnaker_sdk_camera_driver/spinnaker_camConfig.h>
 
-#include "spinnaker_sdk_camera_driver/SpinnakerImageNames.h"
+#include "spinnaker_sdk_camera_driver/SpinnakerImageInfo.h"
 
 #include <sstream>
 #include <image_transport/image_transport.h>
@@ -70,7 +70,7 @@ namespace acquisition {
 
         float mem_usage();
     
-        SystemPtr system_;    
+        SystemPtr system_;
         CameraList camList_;
         vector<acquisition::Camera> cams;
         vector<string> cam_ids_;
@@ -80,7 +80,8 @@ namespace acquisition {
         vector<CameraPtr> pCams_;
         vector<ImagePtr> pResultImages_;
         vector<Mat> frames_;
-        vector<string> time_stamps_;
+        vector<string> time_stamp_strs_;
+        vector<double> exposure_times_;
         vector< vector<Mat> > mem_frames_;
         vector<vector<double>> intrinsic_coeff_vec_;
         vector<vector<double>> distortion_coeff_vec_;
@@ -132,6 +133,8 @@ namespace acquisition {
         bool PUBLISH_CAM_INFO_;
         bool VERIFY_BINNING_;
         uint64_t SPINNAKER_GET_NEXT_IMAGE_TIMEOUT_;
+        bool PUBLISH_EXPOSURE_TIMES_;
+        bool CORRECT_TIMESTAMPS_;
         
         bool region_of_interest_set_;
         int region_of_interest_width_;
@@ -158,8 +161,8 @@ namespace acquisition {
 		
         vector<sensor_msgs::ImagePtr> img_msgs;
         vector<sensor_msgs::CameraInfoPtr> cam_info_msgs;
-        spinnaker_sdk_camera_driver::SpinnakerImageNames mesg;
-        boost::mutex queue_mutex_;  
+        spinnaker_sdk_camera_driver::SpinnakerImageInfo mesg;
+        boost::mutex queue_mutex_;
     };
 
 }

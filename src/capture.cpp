@@ -118,7 +118,7 @@ acquisition::Capture::Capture(): it_(nh_), nh_pvt_ ("~") {
     load_cameras();
  
     //initializing the ros publisher
-    acquisition_pub = nh_.advertise<spinnaker_sdk_camera_driver::SpinnakerImageNames>("camera", 1000);
+    acquisition_pub = nh_.advertise<spinnaker_sdk_camera_driver::SpinnakerImageInfo>("camera", 1000);
     //dynamic reconfigure
     dynamicReCfgServer_ = new dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig>(nh_pvt_);
     
@@ -201,7 +201,7 @@ acquisition::Capture::Capture(ros::NodeHandle nodehandl, ros::NodeHandle private
     load_cameras();
 
     //initializing the ros publisher
-    acquisition_pub = nh_.advertise<spinnaker_sdk_camera_driver::SpinnakerImageNames>("camera", 1000);
+    acquisition_pub = nh_.advertise<spinnaker_sdk_camera_driver::SpinnakerImageInfo>("camera", 1000);
     //dynamic reconfigure
     dynamicReCfgServer_ = new dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig>(nh_pvt_);
     
@@ -226,7 +226,7 @@ void acquisition::Capture::load_cameras() {
     for (int i=0; i<numCameras_; i++) {
         acquisition::Camera cam(camList_.GetByIndex(i));
         ROS_INFO_STREAM("  -"<<cam.get_id());
-       }
+    }
 
     bool master_set = false;
     int cam_counter = 0;
@@ -253,7 +253,10 @@ void acquisition::Capture::load_cameras() {
 
                 Mat img;
                 frames_.push_back(img);
-                time_stamps_.push_back("");
+                time_stamp_strs_.push_back("");
+                exposure_times_.push_back(0);
+
+                mesg.exposure_times.push_back(ros::Duration());
         
                 cams.push_back(cam);
                 
@@ -452,6 +455,24 @@ void acquisition::Capture::read_parameters() {
             flip_vertical_vec_.push_back(false);
             ROS_WARN_STREAM("  "<<cam_ids_[i] << " flip_vertical set to default = " << flip_vertical_vec_[i]);
         }
+    }
+
+    if (nh_pvt_.getParam("publish_exposure_times", PUBLISH_EXPOSURE_TIMES_)) {
+        ROS_INFO("  Publishing Exposure Times: %s", PUBLISH_EXPOSURE_TIMES_ ? "true" : "false");
+    } else {
+        ROS_WARN(
+            "  'publish_exposure_times' Parameter not set, using default behavior publish_exposure_times = %s",
+            PUBLISH_EXPOSURE_TIMES_ ? "true" : "false"
+        );
+    }
+
+    if (nh_pvt_.getParam("account_for_exposure_time", CORRECT_TIMESTAMPS_)) {
+        ROS_INFO("  Correcting timestamps with exposure times: %s", CORRECT_TIMESTAMPS_ ? "true" : "false");
+    } else {
+        ROS_WARN(
+            "  'account_for_exposure_time' Parameter not set, using default behavior account_for_exposure_time = %s",
+            CORRECT_TIMESTAMPS_ ? "true" : "false"
+        );
     }
 
     if (nh_pvt_.getParam("to_ros", EXPORT_TO_ROS_)) 
@@ -709,6 +730,12 @@ void acquisition::Capture::init_cameras(bool soft = false) {
                 cams[i].setEnumValue("ExposureMode", "Timed");
                 cams[i].setBoolValue("ReverseX", flip_horizontal_vec_[i]);
                 cams[i].setBoolValue("ReverseY", flip_vertical_vec_[i]);
+                cams[i].enableChunkData();
+                cams[i].enableChunkDataType("Timestamp");
+                cams[i].enableChunkDataType("ExposureTime");
+                if (CORRECT_TIMESTAMPS_) {
+                    cams[i].enableTimestampCorrection();
+                }
                 
                 if (region_of_interest_set_){
                     if (region_of_interest_width_ != 0)
@@ -851,9 +878,9 @@ void acquisition::Capture::save_mat_frames(int dump) {
         } else {
 
             if (MASTER_TIMESTAMP_FOR_ALL_)
-                timestamp = time_stamps_[MASTER_CAM_];
+                timestamp = time_stamp_strs_[MASTER_CAM_];
             else
-                timestamp = time_stamps_[i];
+                timestamp = time_stamp_strs_[i];
 
             ostringstream filename;
             filename<< path_ << cam_names_[i] << "/" << timestamp << ext_;
@@ -873,7 +900,6 @@ void acquisition::Capture::save_mat_frames(int dump) {
 void acquisition::Capture::export_to_ROS() {
     double t = ros::Time::now().toSec();
     std_msgs::Header img_msg_header;
-    img_msg_header.stamp = mesg.header.stamp;
     string frame_id_prefix;
     if (tf_prefix_.compare("") != 0)
         frame_id_prefix = tf_prefix_ +"/";
@@ -881,7 +907,17 @@ void acquisition::Capture::export_to_ROS() {
 
     for (unsigned int i = 0; i < numCameras_; i++) {
         img_msg_header.frame_id = frame_id_prefix + "cam_"+to_string(i)+"_optical_frame";
+        if (CORRECT_TIMESTAMPS_) {
+            img_msg_header.stamp = mesg.time - ros::Duration(0, exposure_times_[i] / 2);
+        } else {
+            img_msg_header.stamp = mesg.time;
+        }
+
         cam_info_msgs[i]->header = img_msg_header;
+
+        if (PUBLISH_EXPOSURE_TIMES_) {
+            mesg.exposure_times[i] = ros::Duration(0, exposure_times_[i]);
+        }
 
         if(color_)
             img_msgs[i]=cv_bridge::CvImage(img_msg_header, "bgr8", frames_[i]).toImageMsg();
@@ -889,9 +925,8 @@ void acquisition::Capture::export_to_ROS() {
             img_msgs[i]=cv_bridge::CvImage(img_msg_header, "mono8", frames_[i]).toImageMsg();
 
         camera_image_pubs[i].publish(img_msgs[i],cam_info_msgs[i]);
-
     }
-    export_to_ROS_time_ = ros::Time::now().toSec()-t;;
+    export_to_ROS_time_ = ros::Time::now().toSec()-t;
 }
 
 void acquisition::Capture::save_binary_frames(int dump) {
@@ -910,9 +945,9 @@ void acquisition::Capture::save_binary_frames(int dump) {
         } else {
 
             if (MASTER_TIMESTAMP_FOR_ALL_)
-                timestamp = time_stamps_[MASTER_CAM_];
+                timestamp = time_stamp_strs_[MASTER_CAM_];
             else
-                timestamp = time_stamps_[i];
+                timestamp = time_stamp_strs_[i];
                 
             ostringstream filename;
             filename<< path_ << cam_names_[i] << "/" << timestamp << ".bin";
@@ -948,7 +983,10 @@ void acquisition::Capture::get_mat_images() {
         //ROS_INFO_STREAM("CAM ID IS "<< i);
         frames_[i] = cams[i].grab_mat_frame();
         //ROS_INFO("sucess");
-        time_stamps_[i] = cams[i].get_time_stamp();
+        time_stamp_strs_[i] = cams[i].get_time_stamp_str();
+        if (PUBLISH_EXPOSURE_TIMES_) {
+            exposure_times_[i] = cams[i].get_exposure_time();
+        }
 
 
         if (i==0)
@@ -964,7 +1002,7 @@ void acquisition::Capture::get_mat_images() {
         
     }
     mesg.header.stamp = ros::Time::now();
-    mesg.time = ros::Time::now();
+    mesg.time = mesg.header.stamp;
     string message = ss.str();
     ROS_DEBUG_STREAM(message);
 
