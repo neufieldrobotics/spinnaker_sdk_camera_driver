@@ -23,20 +23,20 @@
 
 
   <!-- nodelet manager params-->
-  <arg name="nodelet_manager_name" default="vision_nodelet_manager" doc="name of the nodelet manager, comes handy when launching multiple nodelets from different launch files" />
-  <arg name="start_nodelet_manager" default="true" doc="If set to True(default), creates a nodelet manager with $(arg nodelet_manager_name).
-  If False, the acquisition/capture_nodelet waits for the nodelet_manager name $(arg nodelet_manager_name)" />
+  <arg name="manager" default="vision_nodelet_manager" doc="name of the nodelet manager, comes handy when launching multiple nodelets from different launch files" />
+  <arg name="external_manager" default="false" doc="If set to False(default), creates a nodelet manager with $(arg manager).
+  If True, the acquisition/Capture waits for the nodelet_manager name $(arg manager)" />
 
   <!-- Capture nodelet params-->
   <arg name="tf_prefix" default="" doc="will prefix (arg tf_prefix)/ to existing frame_id in Image msg and camerainfo msg" />
   <arg name="config_file"       default="$(find spinnaker_sdk_camera_driver)/params/test_params.yaml" doc="File specifying the parameters of the camera_array"/>
 
    <!-- start the nodelet manager if $(arg start_nodelet_manager) is true-->
-  <node pkg="nodelet" type="nodelet" name="$(arg nodelet_manager_name)" args="manager" output="screen" if="$(arg start_nodelet_manager)" />
+  <node pkg="nodelet" type="nodelet" name="$(arg manager)" args="manager" output="screen" unless="$(arg external_manager)" />
 
   <!-- load the acquisition nodelet -->
   <node pkg="nodelet" type="nodelet" name="acquisition_node"
-          args="load acquisition/Capture $(arg nodelet_manager_name)" >
+          args="load acquisition/Capture $(arg manager)" >
     <!-- load the acquisition node parameters file.  Note any parameters provided in this file will 
 	 override what is in the yaml file.  Thus use it to set parameters camer_array configuration params -->
     <rosparam command="load"        file="$(arg config_file)" />

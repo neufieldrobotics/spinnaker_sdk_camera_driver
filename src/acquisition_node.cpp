@@ -17,5 +17,7 @@ int main(int argc, char** argv) {
     std::string nodelet_name = ros::this_node::getName();
     nodelet.load(nodelet_name, "acquisition/Capture", remap, nargv);
 
+    ros::waitForShutdown();
+
     return 0;        
 }

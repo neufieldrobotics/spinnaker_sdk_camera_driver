@@ -47,11 +47,11 @@ Modify the `params/test_params.yaml` file replacing the cam-ids and master cam s
 ```bash
 # To launch nodelet verison of driver, use #
 
-roslaunch spinnaker_camera_driver acquisition_nodelet.launch
+roslaunch spinnaker_camera_driver acquisition.launch
 
 # To launch node version of driver, use 
 
-roslaunch spinnaker_camera_driver acquisition.launch
+roslaunch spinnaker_camera_driver node_acquisition.launch
 # Test that the images are being published by running
 rqt_image_view
 ```
@@ -130,11 +130,11 @@ This is the names that would be given to the cameras for filenames and rostopics
   When exposure_time is set to 0(zero), the ExposureAuto is set to 'Continuous', enabling auto exposure.
 
 ### nodelet details
-* ~nodelet_manager_name (string, default: vision_nodelet_manager)
+* ~manager (string, default: vision_nodelet_manager)
   Specify the name of the nodelet_manager under which nodelet to be launched.
-* ~start_nodelet_manager (bool, default: false)
-  If set True, nodelet_manager of name $(arg nodelet_manager_name) will be launched.
-  If set False(default), the acquisition/capture_nodelet waits for the nodelet_manager name $(arg nodelet_manager_name).
+* ~external_manager (bool, default: false)
+  If set False(default), nodelet_manager of name $(arg manager) will be launched.
+  If set True, the acquisition/Capture waits for the nodelet_manager name $(arg manager).
 
 ### Camera info message details
 * ~image_width (int)
