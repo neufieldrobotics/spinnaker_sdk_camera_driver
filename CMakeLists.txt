@@ -119,7 +119,13 @@ add_executable (acquisition_node src/acquisition_node.cpp)
 add_dependencies(acquisition_node acquilib ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 target_link_libraries (acquisition_node acquilib ${LIBS} ${catkin_LIBRARIES})
 
-install(TARGETS acquilib acquisition_node 
+## subscriber_example for subscribing as nodelet
+add_library (subscriber_example examples/subscriber_nodelet.cpp)
+add_dependencies(subscriber_example ${catkin_EXPORTED_TARGETS})
+target_link_libraries(subscriber_example ${catkin_LIBRARIES})
+
+
+install(TARGETS acquilib acquisition_node subscriber_example
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

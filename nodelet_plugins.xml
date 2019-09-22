@@ -5,3 +5,11 @@
     </description>
   </class>
 </library>
+
+<library path="lib/libsubscriber_example">
+  <class name="subscriber_nodelet_ns/subscriber_nodelet" type="subscriber_nodelet_ns::subscriber_nodelet" base_class_type="nodelet::Nodelet">
+    <description>
+      Nodelet for image acquisition using spinnaker sdk
+    </description>
+  </class>
+</library>

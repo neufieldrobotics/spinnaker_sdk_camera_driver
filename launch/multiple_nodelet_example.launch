@@ -19,5 +19,9 @@
         <!-- include file="$(find apriltag_ros)/launch/continuous_detection_nodelet.launch" >
             <arg name="nodelet_manager_name" value="$(arg vision_nm)" />
         </include -->
-    </group>
+
+        <!-- launch example_subscriber_nodelet -->
+        <node pkg="nodelet" type="nodelet" name="subscriber_nodelet"
+        args="load subscriber_nodelet_ns/subscriber_nodelet $(arg vision_nm)" />
+    </group >
 </launch>
