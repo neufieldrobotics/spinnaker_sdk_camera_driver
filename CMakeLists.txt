@@ -112,27 +112,20 @@ add_library (acquilib SHARED
   src/capture.cpp
   src/camera.cpp
 )
-
 add_dependencies(acquilib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 target_link_libraries(acquilib ${LIBS} ${catkin_LIBRARIES})
-
-add_library(capture_nodelet src/capture_nodelet.cpp src/subscriber_nodelet.cpp)
-target_link_libraries(capture_nodelet acquilib ${catkin_LIBRARIES})
 
 add_executable (acquisition_node src/acquisition_node.cpp)
 add_dependencies(acquisition_node acquilib ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 target_link_libraries (acquisition_node acquilib ${LIBS} ${catkin_LIBRARIES})
 
+## subscriber_example for subscribing as nodelet
+add_library (subscriber_example examples/subscriber_nodelet.cpp)
+add_dependencies(subscriber_example ${catkin_EXPORTED_TARGETS})
+target_link_libraries(subscriber_example ${catkin_LIBRARIES})
 
-add_executable (acquisition_nodelet src/acquisition_nodelet.cpp)
-add_dependencies(acquisition_nodelet acquilib capture_nodelet ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
-target_link_libraries (acquisition_nodelet acquilib capture_nodelet ${LIBS} ${catkin_LIBRARIES})
 
-add_executable (nodelet_test src/nodelet_test.cpp)
-add_dependencies(nodelet_test ${catkin_EXPORTED_TARGETS})
-target_link_libraries (nodelet_test capture_nodelet ${LIBS} ${catkin_LIBRARIES})
-
-install(TARGETS acquilib acquisition_node capture_nodelet acquisition_nodelet nodelet_test
+install(TARGETS acquilib acquisition_node subscriber_example
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -141,4 +134,8 @@ install(TARGETS acquilib acquisition_node capture_nodelet acquisition_nodelet no
 install(DIRECTORY include
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
+)
+
+install(FILES nodelet_plugins.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )

@@ -18,6 +18,10 @@
 
 #include <sstream>
 #include <image_transport/image_transport.h>
+// nodelets
+#include <nodelet/nodelet.h>
+#include <nodelet/loader.h>
+#include "pluginlib/class_list_macros.h"
 
 using namespace Spinnaker;
 using namespace Spinnaker::GenApi;
@@ -27,16 +31,18 @@ using namespace std;
 
 namespace acquisition {
     
-    class Capture {
+    class Capture : public nodelet::Nodelet {
 
     public:
     
         ~Capture();
         Capture();
-        Capture( ros::NodeHandle node,ros::NodeHandle private_nh);
+        virtual void onInit();
+
+        std::shared_ptr<boost::thread> pubThread_;
 
         void load_cameras();
-        
+        void init_variables_register_to_ros();
         void init_array();
         void init_cameras(bool);
         void start_acquisition();
@@ -146,8 +152,8 @@ namespace acquisition {
         // ros variables
         ros::NodeHandle nh_;
         ros::NodeHandle nh_pvt_;
-        //image_transport::ImageTransport it_;
-        image_transport::ImageTransport it_;
+        std::shared_ptr<image_transport::ImageTransport> it_;
+
         dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig>* dynamicReCfgServer_;
 
         ros::Publisher acquisition_pub;

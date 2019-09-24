@@ -1,4 +1,8 @@
 #include "spinnaker_sdk_camera_driver/capture.h"
+#include <nodelet/nodelet.h>
+#include <pluginlib/class_list_macros.h>
+
+PLUGINLIB_EXPORT_CLASS(acquisition::Capture, nodelet::Nodelet)
 
 acquisition::Capture::~Capture(){
 
@@ -25,111 +29,42 @@ acquisition::Capture::~Capture(){
     system_->ReleaseInstance();
 
     delete dynamicReCfgServer_;
-    
+    // for boost thread
+    if (pubThread_) {
+        pubThread_->interrupt();
+        pubThread_->join();
+    }
+    // reset pubThread_
+    pubThread_.reset();
+    //reset it_
+    it_.reset();
+
     ros::shutdown();
 
 }
 
-void handler(int i) {
-
-    // Capture* obj = reinterpret_cast<Capture*>(object);
-    ROS_FATAL("HERE!!!");
-    
+acquisition::Capture::Capture() {
+    //
 }
 
-acquisition::Capture::Capture(): it_(nh_), nh_pvt_ ("~") {
-
-    // struct sigaction sigIntHandler;
-
-    // sigIntHandler.sa_handler = handler;
-    // sigemptyset(&sigIntHandler.sa_mask);
-    // sigIntHandler.sa_flags = 0;
-
-    // sigaction(SIGINT, &sigIntHandler, NULL);
-
-    int mem;
-    ifstream usb_mem("/sys/module/usbcore/parameters/usbfs_memory_mb");
-    if (usb_mem) {
-        usb_mem >> mem;
-        if (mem >= 1000)
-            ROS_INFO_STREAM("[ OK ] USB memory: "<<mem<<" MB");
-        else{
-            ROS_FATAL_STREAM("  USB memory on system too low ("<<mem<<" MB)! Must be at least 1000 MB. Run: \nsudo sh -c \"echo 1000 > /sys/module/usbcore/parameters/usbfs_memory_mb\"\n Terminating...");
-            ros::shutdown();
-        }
-    } else {
-        ROS_FATAL_STREAM("Could not check USB memory on system! Terminating...");
-        ros::shutdown();
-    }
-
-    // default values for the parameters are set here. Should be removed eventually!!
-    exposure_time_ = 0 ; // default as 0 = auto exposure
-    soft_framerate_ = 20; //default soft framrate
-    ext_ = ".bmp";
-    SOFT_FRAME_RATE_CTRL_ = false;
-    LIVE_ = false;
-    TIME_BENCHMARK_ = false;
-    MASTER_TIMESTAMP_FOR_ALL_ = true;    
-    EXTERNAL_TRIGGER_ = false;
-    EXPORT_TO_ROS_ = false;
-    PUBLISH_CAM_INFO_ = false;
-    SAVE_ = false;
-    SAVE_BIN_ = false;
-    nframes_ = -1;
-    FIXED_NUM_FRAMES_ = false;
-    MAX_RATE_SAVE_ = false;
-    region_of_interest_set_ = false;
-    skip_num_ = 20; 
-    init_delay_ = 1; 
-    master_fps_ = 20.0;
-    binning_ = 1;
-    SPINNAKER_GET_NEXT_IMAGE_TIMEOUT_ = 2000;
-    todays_date_ = todays_date();
-    
-    dump_img_ = "dump" + ext_;
-
-    grab_time_ = 0;
-    save_time_ = 0;
-    toMat_time_ = 0;
-    save_mat_time_ = 0;
-    export_to_ROS_time_ = 0; 
-    achieved_time_ = 0;
-        
-    // decimation_ = 1;
-  
-    CAM_ = 0;
-
-    // default flag values
-
-    MANUAL_TRIGGER_ = false;
-    CAM_DIRS_CREATED_ = false;
-
-    GRID_CREATED_ = false;
-    VERIFY_BINNING_ = false;
-
-
-    //read_settings(config_file);
-    read_parameters();
-    
-    // Retrieve singleton reference to system object
-    ROS_INFO_STREAM("Creating system instance...");
-    system_ = System::GetInstance();
-
-    load_cameras();
- 
-    //initializing the ros publisher
-    acquisition_pub = nh_.advertise<spinnaker_sdk_camera_driver::SpinnakerImageNames>("camera", 1000);
-    //dynamic reconfigure
-    dynamicReCfgServer_ = new dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig>(nh_pvt_);
-    
-    dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig>::CallbackType dynamicReCfgServerCB_t;   
-
-    dynamicReCfgServerCB_t = boost::bind(&acquisition::Capture::dynamicReconfigureCallback,this, _1, _2);
-    dynamicReCfgServer_->setCallback(dynamicReCfgServerCB_t);
+void acquisition::Capture::onInit() {
+    NODELET_INFO("Initializing nodelet");
+    nh_ = this->getNodeHandle();
+    nh_pvt_ = this->getPrivateNodeHandle();
+    //it_.reset(new image_transport::ImageTransport(nh_));
+    it_ = std::shared_ptr<image_transport::ImageTransport>(new image_transport::ImageTransport(nh_));
+    // set values to global class variables and register pub, sub to ros
+    init_variables_register_to_ros();
+    init_array();
+    // calling capture::run() in a different thread
+    pubThread_.reset(new boost::thread(boost::bind(&acquisition::Capture::run, this)));
+    NODELET_INFO("onInit Initialized");
 }
 
-acquisition::Capture::Capture(ros::NodeHandle nodehandl, ros::NodeHandle private_nh) : nh_ (nodehandl) , it_(nh_), nh_pvt_ (private_nh) {
+void acquisition::Capture::init_variables_register_to_ros() {
 
+    // this is all stuff in previous contructor
+    // except for nodehandles assigned in onInit()
     int mem;
     ifstream usb_mem("/sys/module/usbcore/parameters/usbfs_memory_mb");
     if (usb_mem) {
@@ -209,9 +144,8 @@ acquisition::Capture::Capture(ros::NodeHandle nodehandl, ros::NodeHandle private
 
     dynamicReCfgServerCB_t = boost::bind(&acquisition::Capture::dynamicReconfigureCallback,this, _1, _2);
     dynamicReCfgServer_->setCallback(dynamicReCfgServerCB_t);
+
 }
-
-
 void acquisition::Capture::load_cameras() {
 
     // Retrieve list of cameras from the system
@@ -257,7 +191,7 @@ void acquisition::Capture::load_cameras() {
         
                 cams.push_back(cam);
                 
-                camera_image_pubs.push_back(it_.advertiseCamera("camera_array/"+cam_names_[j]+"/image_raw", 1));
+                camera_image_pubs.push_back(it_->advertiseCamera("camera_array/"+cam_names_[j]+"/image_raw", 1));
                 //camera_info_pubs.push_back(nh_.advertise<sensor_msgs::CameraInfo>("camera_array/"+cam_names_[j]+"/camera_info", 1));
 
                 img_msgs.push_back(sensor_msgs::ImagePtr());
