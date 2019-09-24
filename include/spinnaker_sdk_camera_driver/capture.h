@@ -105,12 +105,13 @@ namespace acquisition {
         int nframes_;
         float init_delay_;
         int skip_num_;
-        float master_fps_;
+        //float master_fps_;
         int binning_;
         bool color_;
         string dump_img_;
         string ext_;
         float exposure_time_;
+        float auto_exposure_lower_limit_,auto_exposure_upper_limit_;
         double target_grey_value_;
         // int decimation_;
         string tf_prefix_;        
