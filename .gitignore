@@ -2,6 +2,8 @@ $ cat .gitignore
 *.[oa]
 *~
 
+include/spinnaker_sdk_camera_driver/spinnaker_configure.h
+
 # no .a files
 #*.a
 

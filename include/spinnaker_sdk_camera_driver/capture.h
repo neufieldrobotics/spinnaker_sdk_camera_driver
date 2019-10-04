@@ -4,7 +4,7 @@
 #include "std_include.h"
 #include "serialization.h"
 #include "camera.h"
-
+#include "spinnaker_configure.h"
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/filesystem.hpp>
 //ROS
@@ -23,6 +23,10 @@
 #include <nodelet/loader.h>
 #include "pluginlib/class_list_macros.h"
 
+#ifdef trigger_msgs_FOUND
+  #include <trigger_msgs/sync_trigger.h>
+#endif 
+
 using namespace Spinnaker;
 using namespace Spinnaker::GenApi;
 using namespace Spinnaker::GenICam;
@@ -38,7 +42,7 @@ namespace acquisition {
         ~Capture();
         Capture();
         virtual void onInit();
-
+        
         std::shared_ptr<boost::thread> pubThread_;
 
         void load_cameras();
@@ -73,7 +77,7 @@ namespace acquisition {
         void update_grid();
         void export_to_ROS();
         void dynamicReconfigureCallback(spinnaker_sdk_camera_driver::spinnaker_camConfig &config, uint32_t level);
-
+       
         float mem_usage();
     
         SystemPtr system_;    
@@ -112,6 +116,7 @@ namespace acquisition {
         string ext_;
         float exposure_time_;
         double target_grey_value_;
+        bool first_image_received;
         // int decimation_;
         string tf_prefix_;        
         int soft_framerate_; // Software (ROS) frame rate
@@ -138,6 +143,21 @@ namespace acquisition {
         bool PUBLISH_CAM_INFO_;
         bool VERIFY_BINNING_;
         uint64_t SPINNAKER_GET_NEXT_IMAGE_TIMEOUT_;
+        
+        #ifdef trigger_msgs_FOUND
+            ros::Time latest_imu_trigger_time_;
+            uint32_t prev_imu_trigger_count_ = 0; 
+            uint32_t latest_imu_trigger_count_;
+
+            void assignTimeStampCallback(const trigger_msgs::sync_trigger::ConstPtr& msg);
+            struct SyncInfo_{
+                uint32_t latest_imu_trigger_count_;
+                ros::Time latest_imu_trigger_time_;
+            };
+            std::vector<std::queue<SyncInfo_>> sync_message_queue_vector_;
+            ros::Subscriber timeStamp_sub;
+        #endif
+        
         
         bool region_of_interest_set_;
         int region_of_interest_width_;
