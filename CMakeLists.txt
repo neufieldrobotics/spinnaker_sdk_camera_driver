@@ -24,6 +24,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   dynamic_reconfigure
   nodelet
+  trigger_msgs
 )
 
 #find_package(PCL REQUIRED)
@@ -50,6 +51,13 @@ if(Boost_FOUND)
 elseif(NOT Boost_FOUND)
   message("Boost not found!")
 endif()
+
+# configure a header file to pass some of the CMake settings
+# to the source code
+configure_file (
+  "${PROJECT_SOURCE_DIR}/include/spinnaker_sdk_camera_driver/spinnaker_configure.h.in"
+  "${PROJECT_SOURCE_DIR}/include/spinnaker_sdk_camera_driver/spinnaker_configure.h"
+)
 
 add_message_files(
   FILES
