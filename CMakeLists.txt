@@ -20,9 +20,8 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   dynamic_reconfigure
   nodelet
-  trigger_msgs
 )
-
+find_package(trigger_msgs)
 #find_package(PCL REQUIRED)
 
 ###
