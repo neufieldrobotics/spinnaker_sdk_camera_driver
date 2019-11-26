@@ -453,7 +453,7 @@ void acquisition::Capture::read_parameters() {
 
 
     if (nh_pvt_.getParam("binning", binning_)){
-        if (binning_ >0) ROS_INFO("  Binning set to: %d",binning_);
+        if (binning_ >= 0) ROS_INFO("  Binning set to: %d",binning_);
         else {
             binning_=1;
             ROS_INFO("  'binning'=%d invalid, Using defauly binning=",binning_);
