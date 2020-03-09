@@ -17,7 +17,15 @@ ROS Version:
 Processor:
 RAM:
 
-If multiple cameras how are they hooked up, whether on the same USB 3.0 bus, if ethernet how busy is the network?
+***Multiple Cameras Only***
+How is the triggering setup? Master/Slave or all slaves or all software triggered?
+
+For USB 3.0 cameras:
+On same USB 3.0 bus or different buses?
+Is the USB 3.0 hub externally powered?
+
+For Ethernet cameras: 
+How busy is the network, does the system work in grayscale, at a lower resoultion (binning) and framerate?
 
 **Do the cameras work with SpinView?**
 
