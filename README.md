@@ -14,24 +14,25 @@ The pre-requisites for this repo include:
 * ros-kinetic-cv-bridge
 * ros-kinetic-image-transport
 
-# Incase of x86_64 or x86_32 architecture, install the following:
+#### After installing spinnaker, Verify that you can run your cameras with SpinView.
+
+#### For x86_64 or x86_32 architecture, install the following:
 * libunwind-dev
 
 ```bash
-# after installing spinnaker verify that you can run your cameras with SpinView
 
 # after installing ros, install other pre-requisites with: 
 
 sudo apt install libunwind-dev ros-kinetic-cv-bridge ros-kinetic-image-transport
+```
 
-# if you use arm64 (aarch64), install pre-requisites with: 
-
+####  For arm64 (aarch64) architecture, install pre-requisites with:
+```
 sudo apt install ros-kinetic-cv-bridge ros-kinetic-image-transport
-
 ```
 
 ### Installing
-To install the spinnaker drivers
+To install this spinnaker_sdk_camera_driver
 ```bash
 mkdir -p ~/spinnaker_ws/src
 cd spinnaker_ws/src
