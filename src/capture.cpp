@@ -132,7 +132,14 @@ void acquisition::Capture::init_variables_register_to_ros() {
     // Retrieve singleton reference to system object
     ROS_INFO_STREAM("Creating system instance...");
     system_ = System::GetInstance();
-
+    
+    const LibraryVersion spinnakerLibraryVersion = system_->GetLibraryVersion();
+    ROS_INFO_STREAM("Spinnaker library version: "
+                    << spinnakerLibraryVersion.major << "."
+                    << spinnakerLibraryVersion.minor << "."
+                    << spinnakerLibraryVersion.type << "."
+                    << spinnakerLibraryVersion.build);
+ 
     load_cameras();
 
     //initializing the ros publisher
