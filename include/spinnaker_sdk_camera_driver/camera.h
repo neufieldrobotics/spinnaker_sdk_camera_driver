@@ -59,7 +59,7 @@ namespace acquisition {
         // void setTrigMode();
         // void setTriggerOverlapOff();
 
-        string get_id() { return string(pCam_->GetUniqueID()); }
+        string get_id();
         void make_master() { MASTER_ = true; ROS_DEBUG_STREAM( "camera " << get_id() << " set as master"); }
         bool is_master() { return MASTER_; }
         void set_color(bool flag) { COLOR_ = flag; }

@@ -292,6 +292,14 @@ void acquisition::Camera::trigger() {
     
 }
 
+string acquisition::Camera::get_id() {
+    INodeMap& nodeMap = pCam_->GetTLDeviceNodeMap();
+    CStringPtr ptrDeviceSerialNumber = nodeMap.GetNode("DeviceSerialNumber");
+    if (IsReadable(ptrDeviceSerialNumber)){
+        return string(ptrDeviceSerialNumber->GetValue());
+    }
+    return "";
+}
 
 void acquisition::Camera::targetGreyValueTest() {
     CFloatPtr ptrExpTest =pCam_->GetNodeMap().GetNode("AutoExposureTargetGreyValue");
