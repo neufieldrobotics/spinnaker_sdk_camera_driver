@@ -13,7 +13,7 @@ apt-get update
 apt-get install -q -y --no-install-recommends \
     build-essential tree wget dirmngr gnupg2 vim nano git debconf-utils libunwind-dev
 
-wget https://www.dl.dropboxusercontent.com/s/xq5f6r15i4rea4w/spinnaker-$SPINNAKER_VERSION-amd64-pkg.tar.gz
+wget https://www.dl.dropboxusercontent.com/s/xq5f6r15i4rea4w/spinnaker-$SPINNAKER_VERSION-amd64-pkg.tar.gz -nv
 
 tar -zxvf spinnaker-$SPINNAKER_VERSION-$SPINNAKER_LINUX_ARCH-pkg.tar.gz
 #rm spinnaker-$SPINNAKER_VERSION-$SPINNAKER_LINUX_ARCH-pkg.tar.gz
