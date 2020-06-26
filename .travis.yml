@@ -14,9 +14,10 @@ script:
 - echo TRAVIS_BUILD_DIR is $TRAVIS_BUILD_DIR
 - >
   docker run
-  -v $TRAVIS_BUILD_DIR:/ros_ws/src/spinnaker_sdk_camera_driver/ ros:$DOCKER_IMAGE
+  -v $TRAVIS_BUILD_DIR:/ros_ws/src/spinnaker_sdk_camera_driver/
   --env SPINNAKER_VERSION=$SPINNAKER_VERSION
   --env SPINNAKER_LINUX_ARCH=$SPINNAKER_LINUX_ARCH
+  ros:$DOCKER_IMAGE
   /bin/bash -c 
   "
   /ros_ws/src/spinnaker_sdk_camera_driver/download_and_install_spinnaker.sh;
