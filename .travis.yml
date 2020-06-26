@@ -1,3 +1,5 @@
+language: minimal
+
 services:
   - docker
 
@@ -10,4 +12,14 @@ before_install:
 
 script:
 - echo TRAVIS_BUILD_DIR is $TRAVIS_BUILD_DIR
-- docker run -v $TRAVIS_BUILD_DIR:/ros_ws/src/spinnaker_sdk_camera_driver/ ros:kinetic-perception-xenial /bin/bash -c "/ros_ws/src/spinnaker_sdk_camera_driver/download_and_install_spinnaker.sh; cd /ros_ws; catkin_make"
+- >
+   docker run 
+    -v $TRAVIS_BUILD_DIR:/ros_ws/src/spinnaker_sdk_camera_driver/ $DOCKER_IMAGE 
+    --env SPINNAKER_VERSION=$SPINNAKER_VERSION 
+    --env SPINNAKER_LINUX_ARCH=$SPINNAKER_LINUX_ARCH
+    /bin/bash -c "
+      /ros_ws/src/spinnaker_sdk_camera_driver/download_and_install_spinnaker.sh; 
+      cd /ros_ws; 
+      catkin_make
+    "
+
