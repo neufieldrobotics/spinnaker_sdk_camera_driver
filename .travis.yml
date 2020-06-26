@@ -6,6 +6,8 @@ services:
 env:
   - DOCKER_IMAGE=kinetic-perception-xenial SPINNAKER_VERSION=2.0.0.147 SPINNAKER_LINUX_ARCH=amd64
   - DOCKER_IMAGE=melodic-perception-bionic SPINNAKER_VERSION=2.0.0.147 SPINNAKER_LINUX_ARCH=amd64
+  - DOCKER_IMAGE=melodic-perception-bionic SPINNAKER_VERSION=1.24.0.60 SPINNAKER_LINUX_ARCH=amd64
+  - DOCKER_IMAGE=melodic-perception-bionic SPINNAKER_VERSION=1.24.0.60 SPINNAKER_LINUX_ARCH=amd64
 
 before_install:
 - docker pull ros:$DOCKER_IMAGE
