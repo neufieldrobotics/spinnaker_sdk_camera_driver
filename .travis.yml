@@ -11,7 +11,7 @@ env:
 #  - DOCKER_IMAGE=ros:melodic-perception-bionic SPINNAKER_VERSION=2.0.0.147 SPINNAKER_LINUX_ARCH=amd64
 #  - DOCKER_IMAGE=ros:kinetic-perception-xenial SPINNAKER_VERSION=1.24.0.60 SPINNAKER_LINUX_ARCH=amd64
 #  - DOCKER_IMAGE=ros:melodic-perception-bionic SPINNAKER_VERSION=1.24.0.60 SPINNAKER_LINUX_ARCH=amd64
-  - DOCKER_IMAGE= arm64v8/ros:kinetic-perception-xenial SPINNAKER_VERSION=1.18.0.17 SPINNAKER_LINUX_ARCH=armhf
+  - DOCKER_IMAGE=arm64v8/ros:kinetic-perception-xenial SPINNAKER_VERSION=1.18.0.17 SPINNAKER_LINUX_ARCH=armhf
 
 before_install:
 - docker pull $DOCKER_IMAGE
