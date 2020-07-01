@@ -24,7 +24,7 @@ acquisition::Capture::~Capture(){
     ROS_INFO_STREAM("Releasing camera pointers...");
     cams.clear();
 
-    cout<<"Releasing system instance...";
+    ROS_INFO_STREAM("Releasing system instance...");
     system_->ReleaseInstance();
 
     delete dynamicReCfgServer_;
