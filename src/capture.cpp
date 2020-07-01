@@ -130,6 +130,7 @@ void acquisition::Capture::init_variables_register_to_ros() {
     read_parameters();
 
     // Retrieve singleton reference to system object
+    ROS_INFO_STREAM("*** SYSTEM INFORMATION ***");
     ROS_INFO_STREAM("Creating system instance...");
     system_ = System::GetInstance();
     
@@ -166,8 +167,10 @@ void acquisition::Capture::load_cameras() {
 
     for (int i=0; i<numCameras_; i++) {
         acquisition::Camera cam(camList_.GetByIndex(i));
-        ROS_INFO_STREAM("  -"<<cam.get_id());
-       }
+        ROS_INFO_STREAM("  -"<< cam.get_id()
+                             <<" "<< cam.get_node_value("DeviceModelName")
+                             <<" "<< cam.get_node_value("DeviceVersion") );
+    }
 
     bool master_set = false;
     int cam_counter = 0;

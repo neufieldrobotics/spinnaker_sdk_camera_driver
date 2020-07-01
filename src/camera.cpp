@@ -292,13 +292,17 @@ void acquisition::Camera::trigger() {
     
 }
 
-string acquisition::Camera::get_id() {
+string acquisition::Camera::get_node_value(string node_string) {
     INodeMap& nodeMap = pCam_->GetTLDeviceNodeMap();
-    CStringPtr ptrDeviceSerialNumber = nodeMap.GetNode("DeviceSerialNumber");
-    if (IsReadable(ptrDeviceSerialNumber)){
-        return string(ptrDeviceSerialNumber->GetValue());
+    CStringPtr ptrNodeValue = nodeMap.GetNode(node_string.c_str());
+    if (IsReadable(ptrNodeValue)){
+        return string(ptrNodeValue->GetValue());
     }
     return "";
+}
+
+string acquisition::Camera::get_id() {
+    return get_node_value("DeviceSerialNumber");
 }
 
 void acquisition::Camera::targetGreyValueTest() {
