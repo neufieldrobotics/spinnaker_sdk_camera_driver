@@ -2,7 +2,7 @@
 
 acquisition::Camera::~Camera() {
 
-    pCam_ = NULL;
+    pCam_ = nullptr;
     timestamp_ = 0;
 
 }

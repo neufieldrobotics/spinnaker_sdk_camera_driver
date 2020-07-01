@@ -22,8 +22,7 @@ acquisition::Capture::~Capture(){
     camList_.Clear();
 
     ROS_INFO_STREAM("Releasing camera pointers...");
-    for (int i=0; i<cams.size(); i++)
-        cams[i].~Camera();
+    cams.clear();
     
     ROS_INFO_STREAM("Releasing system instance...");
     system_->ReleaseInstance();
