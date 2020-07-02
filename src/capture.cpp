@@ -929,6 +929,7 @@ void acquisition::Capture::run_soft_trig() {
     if (LIVE_)namedWindow("Acquisition", CV_WINDOW_NORMAL | CV_WINDOW_KEEPRATIO);
 
     int count = 0;
+    int count_per_window = 0;
     
     if (!EXTERNAL_TRIGGER_) {
         cams[MASTER_CAM_].trigger();
@@ -937,6 +938,7 @@ void acquisition::Capture::run_soft_trig() {
     get_mat_images();
     if (SAVE_) {
         count++;
+        count_per_window++;
         if (SAVE_BIN_)
             save_binary_frames(0);
         else
@@ -958,6 +960,7 @@ void acquisition::Capture::run_soft_trig() {
 
 
     ros::Rate ros_rate(soft_framerate_);
+    double loop_time_per_window = 0.0;
     try{
         while( ros::ok() ) {
 
@@ -998,6 +1001,7 @@ void acquisition::Capture::run_soft_trig() {
                             if (!EXPORT_TO_ROS_){
                                 ROS_INFO_STREAM("Exporting frames to ROS...");
                                 export_to_ROS();
+                                count_per_window++;
                             }
                         }
                 } else if( (key & 255)==27 ) {  // ESC
@@ -1018,9 +1022,10 @@ void acquisition::Capture::run_soft_trig() {
                 }
                 get_mat_images();
             }
-
+            count++;
+            count_per_window++;
             if (SAVE_) {
-                count++;
+                //count++;
                 if (SAVE_BIN_)
                     save_binary_frames(0);
                 else
@@ -1044,6 +1049,18 @@ void acquisition::Capture::run_soft_trig() {
             // double total_time = grab_time_ + toMat_time_ + disp_time_ + save_mat_time_;
             double total_time = toMat_time_ + disp_time_ + save_mat_time_+export_to_ROS_time_;
             achieved_time_ = ros::Time::now().toSec() - achieved_time_;
+             // averaging loop time in a window to get average fps
+            loop_time_per_window +=achieved_time_;
+            // refresh the avg every window_length_in_time_sec seconds
+            float window_length_in_time_sec = 60.0;
+            if (SOFT_FRAME_RATE_CTRL_ && (loop_time_per_window >= window_length_in_time_sec)) {
+            	double average_fps = count_per_window/loop_time_per_window;
+            	// warns if average_fps+1 is less than requested fps
+            	ROS_WARN_COND(average_fps+1 <soft_framerate_,"Requested FPS %d Average FPS: %.1f",soft_framerate_,average_fps);
+            	// reset 
+            	loop_time_per_window = 0.0;
+            	count_per_window = 0;
+            }
 
             ROS_INFO_COND(TIME_BENCHMARK_,
                           "total time (ms): %.1f \tPossible FPS: %.1f\tActual FPS: %.1f",

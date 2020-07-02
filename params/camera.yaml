@@ -1,0 +1,167 @@
+# header/frame_id will be tf_prefix/<camera_name>_optical_frame
+# example: header/frame_id: robot_name/cam0_optical_frame
+tf_prefix: '' # can be '' or robot_name
+# serial number of master camera, Transformations in P,R are wrt master_cam
+master_cam: 17011862
+# hardware sync trigger info
+#trigger_source: master_cam # can be 'master_cam', 'external'
+# common config for all cameras
+save_type: .bmp # binary or .tiff or .bmp
+# binning equal in both x, y
+binning: 2 # going from 2 to 1 requires cameras to be unplugged and replugged
+color: true
+soft_framerate: 10 # software frame rate is set using ros::rate
+exposure_time: 0  # microseconds, 0:auto
+skip: 5
+#frames: 50
+
+# list calibration info of all cameras below
+cam_array:
+  # cam0
+  cam0:
+    cam_id: 17011867 # serial number of camera
+    # Operational Parameters
+    flip_horizontal: false
+    flip_vertical: false
+    # calibration parameters
+    camera_name: cam0
+    image_width: 2048
+    image_height: 1536
+    camera_matrix:
+      rows: 3
+      cols: 3
+      data: [767.942728, 0.000000, 317.244746, 0.000000, 767.068789, 231.644928, 0.000000, 0.000000, 1.000000]
+    distortion_model: plumb_bob
+    distortion_coefficients:
+      rows: 1
+      cols: 5
+      data: [-0.504042, 0.268940, 0.003454, -0.000748, 0.000000]
+    # all transformations should be wrt to master camera
+    rectification_matrix:
+      rows: 3
+      cols: 3
+      data: [1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000]
+    projection_matrix:
+      rows: 3
+      cols: 4
+      data: [694.958557, 0.000000, 316.182977, 0.000000, 0.000000, 720.968750, 229.582940, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]
+  
+  # cam1
+  cam1:
+    cam_id: 17011857 # serial number of camera
+    # Operational Parameters
+    flip_horizontal: false
+    flip_vertical: false
+    binning: 1 # equal in both x, y
+    # calibration parameters
+    camera_name: cam1
+    image_width: 2048
+    image_height: 1536
+    camera_matrix:
+      rows: 3
+      cols: 3
+      data: [767.942728, 0.000000, 317.244746, 0.000000, 767.068789, 231.644928, 0.000000, 0.000000, 1.000000]
+    distortion_model: plumb_bob
+    distortion_coefficients:
+      rows: 1
+      cols: 5
+      data: [-0.504042, 0.268940, 0.003454, -0.000748, 0.000000]
+    # all transformations should be wrt to master camera
+    rectification_matrix:
+      rows: 3
+      cols: 3
+      data: [1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000]
+    projection_matrix:
+      rows: 3
+      cols: 4
+      data: [694.958557, 0.000000, 316.182977, 0.000000, 0.000000, 720.968750, 229.582940, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]
+
+  # cam2
+  cam2:
+    cam_id: 17011862 # serial number of camera
+    # Operational Parameters
+    flip_horizontal: false
+    flip_vertical: false
+    binning: 1 # equal in both x, y
+    # calibration parameters
+    camera_name: cam2
+    image_width: 2048
+    image_height: 1536
+    camera_matrix:
+      rows: 3
+      cols: 3
+      data: [767.942728, 0.000000, 317.244746, 0.000000, 767.068789, 231.644928, 0.000000, 0.000000, 1.000000]
+    distortion_model: plumb_bob
+    distortion_coefficients:
+      rows: 1
+      cols: 5
+      data: [-0.504042, 0.268940, 0.003454, -0.000748, 0.000000]
+    # all transformations should be wrt to master camera
+    rectification_matrix:
+      rows: 3
+      cols: 3
+      data: [1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000]
+    projection_matrix:
+      rows: 3
+      cols: 4
+      data: [694.958557, 0.000000, 316.182977, 0.000000, 0.000000, 720.968750, 229.582940, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]
+
+  # cam3
+  cam3:
+    cam_id: 17011871 # serial number of camera
+    # Operational Parameters
+    flip_horizontal: false
+    flip_vertical: false
+    binning: 1 # equal in both x, y
+    # calibration parameters
+    camera_name: cam3
+    image_width: 2048
+    image_height: 1536
+    camera_matrix:
+      rows: 3
+      cols: 3
+      data: [767.942728, 0.000000, 317.244746, 0.000000, 767.068789, 231.644928, 0.000000, 0.000000, 1.000000]
+    distortion_model: plumb_bob
+    distortion_coefficients:
+      rows: 1
+      cols: 5
+      data: [-0.504042, 0.268940, 0.003454, -0.000748, 0.000000]
+    # all transformations should be wrt to master camera
+    rectification_matrix:
+      rows: 3
+      cols: 3
+      data: [1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000]
+    projection_matrix:
+      rows: 3
+      cols: 4
+      data: [694.958557, 0.000000, 316.182977, 0.000000, 0.000000, 720.968750, 229.582940, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]
+
+  # cam4
+  cam4:
+    cam_id: 17011869 # serial number of camera
+    # Operational Parameters
+    flip_horizontal: false
+    flip_vertical: false
+    binning: 1 # equal in both x, y
+    # calibration parameters
+    camera_name: cam4
+    image_width: 2048
+    image_height: 1536
+    camera_matrix:
+      rows: 3
+      cols: 3
+      data: [767.942728, 0.000000, 317.244746, 0.000000, 767.068789, 231.644928, 0.000000, 0.000000, 1.000000]
+    distortion_model: plumb_bob
+    distortion_coefficients:
+      rows: 1
+      cols: 5
+      data: [-0.504042, 0.268940, 0.003454, -0.000748, 0.000000]
+    # all transformations should be wrt to master camera
+    rectification_matrix:
+      rows: 3
+      cols: 3
+      data: [1.000000, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000, 0.000000, 1.000000]
+    projection_matrix:
+      rows: 3
+      cols: 4
+      data: [694.958557, 0.000000, 316.182977, 0.000000, 0.000000, 720.968750, 229.582940, 0.000000, 0.000000, 0.000000, 1.000000, 0.000000]
