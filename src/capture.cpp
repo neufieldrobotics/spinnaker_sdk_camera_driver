@@ -11,14 +11,14 @@ acquisition::Capture::~Capture(){
     ifstream file(dump_img_.c_str());
     if (file)
         if (remove(dump_img_.c_str()) != 0)
-            cout<<"Unable to remove dump image!\n";
+            ROS_WARN_STREAM("Unable to remove dump image!");
 
     end_acquisition();
     deinit_cameras();
 
     // pCam = nullptr;
-
-    cout<<"Clearing camList...\n";
+    
+    ROS_INFO_STREAM("Clearing camList...");
     camList_.Clear();
 
     ROS_INFO_STREAM("Releasing camera pointers...");
