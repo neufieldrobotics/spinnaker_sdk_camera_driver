@@ -8,7 +8,13 @@ export DEBIAN_FRONTEND=noninteractive
 # install basic packages
 apt-get update
 apt-get install -q -y --no-install-recommends \
-    build-essential tree wget dirmngr gnupg2 vim nano git debconf-utils libunwind-dev
+    build-essential tree wget dirmngr gnupg2 vim nano git debconf-utils
+# install libunwind-dev only in amd64
+if [[ $SPINNAKER_LINUX_ARCH == "amd64" ]]
+then
+apt-get update
+apt-get install -q -y --no-install-recommends libunwind-dev
+fi
 
 wget https://coe.northeastern.edu/fieldrobotics/spinnaker_sdk_archive/spinnaker-$SPINNAKER_VERSION-$SPINNAKER_LINUX_ARCH-pkg.tar.gz -nv
 
