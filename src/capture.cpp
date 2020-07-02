@@ -15,15 +15,13 @@ acquisition::Capture::~Capture(){
 
     end_acquisition();
     deinit_cameras();
-
-    // pCam = nullptr;
     
     ROS_INFO_STREAM("Clearing camList...");
     camList_.Clear();
 
     ROS_INFO_STREAM("Releasing camera pointers...");
     cams.clear();
-    
+
     ROS_INFO_STREAM("Releasing system instance...");
     system_->ReleaseInstance();
 
@@ -37,8 +35,6 @@ acquisition::Capture::~Capture(){
     pubThread_.reset();
     //reset it_
     it_.reset();
-
-    ros::shutdown();
 
 }
 
@@ -1081,6 +1077,8 @@ void acquisition::Capture::run_soft_trig() {
     catch(...){
         ROS_FATAL_STREAM("Some unknown exception occured. \v Exiting gracefully, \n  possible reason could be Camera Disconnection...");
     }
+    ros::shutdown();
+    //raise(SIGINT);
 }
 
 float acquisition::Capture::mem_usage() {

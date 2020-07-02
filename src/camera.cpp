@@ -37,30 +37,38 @@ void acquisition::Camera::deinit() {
 }
 
 ImagePtr acquisition::Camera::grab_frame() {
-    ImagePtr pResultImage = pCam_->GetNextImage(GET_NEXT_IMAGE_TIMEOUT_);
-    // Check if the Image is complete
+    ImagePtr pResultImage;
+    try{
+        pResultImage = pCam_->GetNextImage(GET_NEXT_IMAGE_TIMEOUT_);
+        // Check if the Image is complete
 
-    if (pResultImage->IsIncomplete()) {
-        
-        ROS_WARN_STREAM("Image incomplete with image status " << pResultImage->GetImageStatus() << "!");
+        if (pResultImage->IsIncomplete()) {
 
-    } else {
+            ROS_WARN_STREAM("Image incomplete with image status " << pResultImage->GetImageStatus() << "!");
 
-        timestamp_ = pResultImage->GetTimeStamp();
-    
-        if (frameID_ >= 0) {
-            lastFrameID_ = frameID_;
-            frameID_ = pResultImage->GetFrameID();
-            ROS_WARN_STREAM_COND(frameID_ > lastFrameID_ + 1,"Frames are being skipped!");
         } else {
-            frameID_ = pResultImage->GetFrameID();
-            ROS_ASSERT_MSG(frameID_ == 0 ,"First frame ID was not zero! Might cause sync issues later...");
+
+            timestamp_ = pResultImage->GetTimeStamp();
+
+            if (frameID_ >= 0) {
+                lastFrameID_ = frameID_;
+                frameID_ = pResultImage->GetFrameID();
+                ROS_WARN_STREAM_COND(frameID_ > lastFrameID_ + 1,"Frames are being skipped!");
+            } else {
+                frameID_ = pResultImage->GetFrameID();
+                ROS_ASSERT_MSG(frameID_ == 0 ,"First frame ID was not zero! Might cause sync issues later...");
+            }
+
         }
 
+        ROS_DEBUG_STREAM("Grabbed frame from camera " << get_id() << " with timestamp " << timestamp_*1000);
+        return pResultImage;
+    }
+    catch(Spinnaker::Exception &e){
+       ROS_FATAL_STREAM(e.what()<<"\n Likely reason is that slaves are not triggered. Check GPIO cables\n");
     }
 
-    ROS_DEBUG_STREAM("Grabbed frame from camera " << get_id() << " with timestamp " << timestamp_*1000);
-    return pResultImage;    
+    return pResultImage;
 }
 
 // Returns last timestamp
@@ -80,8 +88,14 @@ int acquisition::Camera::get_frame_id() {
 
 Mat acquisition::Camera::grab_mat_frame() {
 
-    ImagePtr pResultImage = grab_frame();
-    return convert_to_mat(pResultImage);
+    try{
+        ImagePtr pResultImage = grab_frame();
+        return convert_to_mat(pResultImage);
+    }
+    catch(Spinnaker::Exception &e){
+        ros::shutdown();
+    }
+
 
 }
 
