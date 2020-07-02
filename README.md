@@ -62,14 +62,33 @@ rqt_image_view
 ## Parmeters
 All the parameters can be set via the launch file or via the yaml config_file.  It is good practice to specify all the 'task' specific parameters via launch file and all the 'system configuration' specific parameters via a config_file.  
 
+
+### Auto Exposure Parameters 
+* ~exposure_time (int, default: 0, 0:auto)  
+  Exposure setting for cameras, also available as dynamic reconfiguarble parameter.
+
+
+* For auto_exposure mode (~exposure_time=0), following parameters will be used:
+
+
+The upper and lower limits are the time duration for auto exposure algorithm on chip. On spinview software for Blackfly s, default upper limit = 15000 us
+default lower limits = 100 us and acceptable minimum value >= 6 us
+
+
+Setting an higher auto_exposure_upper_limit could potentially slow down the desired fps based on scene. Especially when collecting data greater than 45 fps in auto_exposure it is recommended to have a lower value on auto_exposure_upper_limit.
+
+
+* ~auto_exposure_lower_limit (int, default: 100 us)  
+  Auto Exposure lower limit setting to be used in auto_exposure mode, min:6 us for blackfly s model.
+* ~auto_exposure_upper_limit (int, default: 2000 us)  
+  Auto Exposure upper limit setting to be used in auto_exposure mode.
+
 ### Task Specific Parameters
 * ~binning (int, default: 1)  
   Binning for cameras, when changing from 2 to 1 cameras need to be unplugged and replugged
 * ~color (bool, default: false)  
   Should color images be used (only works on models that support color images)
-* ~exposure_time (int, default: 0, 0:auto)  
-  Exposure setting for cameras, also available as dynamic reconfiguarble parameter.
-  * ~external_trigger (bool, default: false)  
+* ~external_trigger (bool, default: false)  
   Camera triggering setting when using an external trigger.  In this mode, none of the cameras would be set as a master camera. All cameras are setup to use external trigger.  In this mode the main loop runs at rate set by soft_framerate, so if the external trigger rate is higher than the soft_framerate, the buffer will get filled and images will have a lag. Also in this mode, the getnextimage timeout is set to infinite so that the node dosen't die if a trigger is not received for a while.
 * ~target_grey_value (double, default: 0 , 0:Continous/auto)
   Setting target_grey_value > 4 (min:4 , max:99) will turn AutoExposureTargetGreyValueAuto to 'off' and set AutoExposureTargetGreyValue to target_grey_value. Also available as dynamic reconfigurable parameter. see below in Dynamic reconfigurable parameter section.

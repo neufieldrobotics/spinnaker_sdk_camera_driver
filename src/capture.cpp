@@ -79,6 +79,8 @@ void acquisition::Capture::init_variables_register_to_ros() {
 
     // default values for the parameters are set here. Should be removed eventually!!
     exposure_time_ = 0 ; // default as 0 = auto exposure
+    auto_exposure_lower_limit_ = 100; // 0.1 ms(min value blackfly s=6us)
+    auto_exposure_upper_limit_ = 2000; //  2ms
     soft_framerate_ = 20; //default soft framrate
     ext_ = ".bmp";
     SOFT_FRAME_RATE_CTRL_ = false;
@@ -96,7 +98,7 @@ void acquisition::Capture::init_variables_register_to_ros() {
     region_of_interest_set_ = false;
     skip_num_ = 20;
     init_delay_ = 1;
-    master_fps_ = 20.0;
+    //master_fps_ = 20.0;
     binning_ = 1;
     SPINNAKER_GET_NEXT_IMAGE_TIMEOUT_ = 2000;
     todays_date_ = todays_date();
@@ -432,6 +434,8 @@ void acquisition::Capture::read_parameters() {
         }
     } else ROS_WARN("  'delay' Parameter not set, using default behavior: delay=%f",init_delay_);
 
+
+    /*
     if (nh_pvt_.getParam("fps", master_fps_)){
         if (master_fps_>=0) ROS_INFO("  Master cam fps set to : %0.2f",master_fps_);
         else {
@@ -440,12 +444,21 @@ void acquisition::Capture::read_parameters() {
         }
     }
         else ROS_WARN("  'fps' Parameter not set, using default behavior: fps=%0.2f",master_fps_);
-
+    */
     if (nh_pvt_.getParam("exposure_time", exposure_time_)){
         if (exposure_time_ >0) ROS_INFO("  Exposure set to: %.1f",exposure_time_);
         else ROS_INFO("  'exposure_time'=%0.f, Setting autoexposure",exposure_time_);
     } else ROS_WARN("  'exposure_time' Parameter not set, using default behavior: Automatic Exposure ");
+    if (exposure_time_ == 0) {
+        // if exposure is auto, exposure_time param is 0
+        //  min exposure is usually > 5  fro blackfly s and varies with camera model
+        if (nh_pvt_.getParam("auto_exposure_lower_limit", auto_exposure_lower_limit_)) ROS_INFO("  auto_exposure_lower_limit set to: %.1f",auto_exposure_lower_limit_);
+        else ROS_WARN("  'auto_exposure_lower_limit' Parameter not set, using default behavior: auto_exposure_lower_limit=%.1f",auto_exposure_lower_limit_);
 
+        if (nh_pvt_.getParam("auto_exposure_upper_limit", auto_exposure_upper_limit_)) ROS_INFO("  auto_exposure_upper_limit set to: %.1f",auto_exposure_upper_limit_);
+        else ROS_WARN("  'auto_exposure_upper_limit' Parameter not set, using default behavior: auto_exposure_upper_limit=%.1f",auto_exposure_upper_limit_);
+    }
+            
     if (nh_pvt_.getParam("target_grey_value", target_grey_value_)){
         if (target_grey_value_ >0) ROS_INFO("  target_grey_value set to: %.1f",target_grey_value_);
         else ROS_INFO("  'target_grey_value'=%0.f, Setting AutoExposureTargetGreyValueAuto to Continuous/ auto",target_grey_value_);} 
@@ -665,7 +678,10 @@ void acquisition::Capture::init_cameras(bool soft = false) {
                     cams[i].setFloatValue("ExposureTime", exposure_time_);
                 } else {
                     cams[i].setEnumValue("ExposureAuto", "Continuous");
+                    cams[i].setFloatValue("AutoExposureExposureTimeLowerLimit",auto_exposure_lower_limit_);
+                    cams[i].setFloatValue("AutoExposureExposureTimeUpperLimit",auto_exposure_upper_limit_);
                 }
+
                 if (target_grey_value_ > 4.0) {
                     cams[i].setEnumValue("AutoExposureTargetGreyValueAuto", "Off");
                     cams[i].setFloatValue("AutoExposureTargetGreyValue", target_grey_value_);
