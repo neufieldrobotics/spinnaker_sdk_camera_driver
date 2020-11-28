@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/jagatpreet/workspaces/catkin_ws/src/spinnaker_sdk_camera_driver/cmake-build-debug/devel/setup.sh

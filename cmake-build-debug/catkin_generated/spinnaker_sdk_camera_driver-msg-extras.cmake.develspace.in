@@ -1,0 +1,2 @@
+set(spinnaker_sdk_camera_driver_MESSAGE_FILES "/home/jagatpreet/workspaces/catkin_ws/src/spinnaker_sdk_camera_driver/msg/SpinnakerImageNames.msg")
+set(spinnaker_sdk_camera_driver_SERVICE_FILES "")
