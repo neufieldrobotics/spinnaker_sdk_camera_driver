@@ -275,7 +275,7 @@ void acquisition::Capture::load_cameras() {
     }
     ROS_ASSERT_MSG(cams.size(),"None of the connected cameras are in the config list!");
 
-    ROS_ASSERT_MSG(master_set,"The camera supposed to be the master isn't connected!");
+    //ROS_ASSERT_MSG(master_set,"Master cam error:The camera supposed to be the master isn't connected!");
     // Setting numCameras_ variable to reflect number of camera objects used.
     // numCameras_ variable is used in other methods where it means size of cams list.
     numCameras_ = cams.size();
@@ -283,7 +283,7 @@ void acquisition::Capture::load_cameras() {
     PUBLISH_CAM_INFO_ = true;
 
     if (!EXTERNAL_TRIGGER_)
-		ROS_ASSERT_MSG(master_set,"The camera supposed to be the master isn't connected!");
+        ROS_ASSERT_MSG(master_set,"External trigger error: The device supposed to be the master isn't connected!\"");
 }
 
 

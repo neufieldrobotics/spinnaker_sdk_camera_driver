@@ -3,7 +3,7 @@ cam_ids:
 #- 18080146
 - 17197547
 #- 18159615
-master_cam: 17197547
+#master_cam: 17197547
 cam_aliases:
 - cam0
 skip: 20
