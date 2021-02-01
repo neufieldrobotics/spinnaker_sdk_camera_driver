@@ -6,9 +6,11 @@ services:
 matrix:
   include:
    - arch: amd64
+     env : DOCKER_IMAGE=ros:melodic-perception-bionic SPINNAKER_VERSION=2.0.0.147
+   - arch: amd64
      env : DOCKER_IMAGE=ros:kinetic-perception-xenial SPINNAKER_VERSION=2.0.0.147
    - arch: amd64
-     env : DOCKER_IMAGE=ros:melodic-perception-bionic SPINNAKER_VERSION=2.0.0.147
+     env : DOCKER_IMAGE=ros:melodic-perception-bionic SPINNAKER_VERSION=2.2.0.48
    - arch: amd64
      env : DOCKER_IMAGE=ros:kinetic-perception-xenial SPINNAKER_VERSION=1.24.0.60
    - arch: amd64
