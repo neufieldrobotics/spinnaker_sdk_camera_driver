@@ -1,0 +1,12 @@
+* Include parameter in launch file.
+* variables in capture.h file
+* modify readParameters function for reading gain setting from launch file
+* modify init_variables_register_to_ros function
+* debug using get_node_value() - to check if it is set or not.
+
+
+* modify init_cameras()
+    * - set enum value - camera.cpp, camera.h -auto,single,off mode
+    * - set gain value - camera.cpp, camera.h - gain value as float
+    * -
+

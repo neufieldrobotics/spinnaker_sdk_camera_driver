@@ -80,6 +80,7 @@ void acquisition::Capture::init_variables_register_to_ros() {
     // default values for the parameters are set here. Should be removed eventually!!
     exposure_time_ = 0 ; // default as 0 = auto exposure
     soft_framerate_ = 20; //default soft framrate
+    gain_ = 0;
     ext_ = ".bmp";
     SOFT_FRAME_RATE_CTRL_ = false;
     LIVE_ = false;
@@ -446,6 +447,15 @@ void acquisition::Capture::read_parameters() {
         else ROS_INFO("  'exposure_time'=%0.f, Setting autoexposure",exposure_time_);
     } else ROS_WARN("  'exposure_time' Parameter not set, using default behavior: Automatic Exposure ");
 
+    if(nh_pvt_.getParam("gain", gain_)){
+       if(gain_>0){
+           if (gain_<18){
+               ROS_INFO("gain value set to:%.1f",gain_);
+           } else ROS_INFO(" 'gain' Parameter will be set to maximum : 18");}
+       else ROS_INFO("  'gain' Parameter was zero or negative, using default behavior: Auto gain based on target grey value");
+    }
+    else ROS_WARN("  'gain' Parameter not set, using default behavior: Auto gain based on target grey value");
+
     if (nh_pvt_.getParam("target_grey_value", target_grey_value_)){
         if (target_grey_value_ >0) ROS_INFO("  target_grey_value set to: %.1f",target_grey_value_);
         else ROS_INFO("  'target_grey_value'=%0.f, Setting AutoExposureTargetGreyValueAuto to Continuous/ auto",target_grey_value_);} 
@@ -666,6 +676,20 @@ void acquisition::Capture::init_cameras(bool soft = false) {
                 } else {
                     cams[i].setEnumValue("ExposureAuto", "Continuous");
                 }
+                if(gain_>0){ //fixed gain
+                    cams[i].setEnumValue("GainAuto", "Off");
+                    //string max_value = cams[i].get_node_value("AutoExposureGainUpperLimit");
+                    //cout<<"Max value for gain set in camera is " + 18<<endl;
+                    if (gain_ <= 18)
+                        cams[i].setFloatValue("Gain", gain_);
+                    else
+                        cams[i].setFloatValue("Gain", 18);
+                    target_grey_value_ = 50;
+                } else if(gain_<=0){
+                    cams[i].setEnumValue("GainAuto","Continuous");
+                   // cout<<"Set to AUTO"<<endl;
+                }
+
                 if (target_grey_value_ > 4.0) {
                     cams[i].setEnumValue("AutoExposureTargetGreyValueAuto", "Off");
                     cams[i].setFloatValue("AutoExposureTargetGreyValue", target_grey_value_);
@@ -678,7 +702,7 @@ void acquisition::Capture::init_cameras(bool soft = false) {
                 // cams[i].setFloatValue("AcquisitionFrameRate", 5.0);
 
                 if (color_)
-                    cams[i].setEnumValue("PixelFormat", "BGR8");
+                        cams[i].setEnumValue("PixelFormat", "BGR8");
                     else
                         cams[i].setEnumValue("PixelFormat", "Mono8");
                 cams[i].setEnumValue("AcquisitionMode", "Continuous");

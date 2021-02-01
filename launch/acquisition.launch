@@ -5,9 +5,17 @@
   <!-- acquisition spinnaker params-->
   <arg name="binning"		    default="1"	doc="Binning for cameras, when changing from 2 to 1 cameras need to be unplugged and replugged"/>
   <arg name="color"		        default="false"	doc="Should color images be used (only works on models that support color images)"/>
-  <arg name="exposure_time"     default="0"	doc="Exposure_time setting for cameras"/>
+  <arg name="exposure_time"     default="2000"	doc="Exposure_time setting for cameras"/>
   <arg name="external_trigger"  default="false"	doc="External trigger (No camera is master)"/>
-  <arg name="target_grey_value"   default="0"   doc="AutoExposureTargetGreyValue min: 4 max: 99 if set below 4, AutoExposureTargetGreyValueAuto will be set to continuous(auto) also available as dynamic reconfigurable parameter" />
+  <arg name="gain"              default="2" doc="Gain setting. Gain should be positive (full range - 0 - 18 dB
+                                                for blackfly-s camera) or zero (auto gain).
+                                                if gain > 0, it will be set to 18.
+                                                Default is 0,means auto gain which is set according to target gain value or or
+                                                autoexposure settings"/>
+  <arg name="target_grey_value"   default="0"   doc="AutoExposureTargetGreyValue min: 4 max: 99 if set below 4,
+                                                     AutoExposureTargetGreyValueAuto will be set to continuous(auto)
+                                                     also available as dynamic reconfigurable parameter.
+                                                     This parameter has no meaning when auto exposure and auto gain are off" />
   <arg name="frames"            default="3400"	doc="Numer of frames to save/view 0=ON"/>
   <arg name="live"              default="false"	doc="Show images on screen GUI"/>
   <arg name="live_grid"         default="false"	doc="Show images on screen GUI in a grid"/>
@@ -44,6 +52,7 @@
     <!-- Load parameters onto server using argument or default values above -->
     <param name="exposure_time"     value="$(arg exposure_time)" />
     <param name="external_trigger"     value="$(arg external_trigger)" />
+    <param name="gain"              value="$(arg gain)"/>
     <param name="target_grey_value" value="$(arg target_grey_value)" />
     <param name="binning"           value="$(arg binning)" />
     <param name="color"             value="$(arg color)" />
