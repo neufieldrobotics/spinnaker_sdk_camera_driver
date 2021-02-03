@@ -204,6 +204,7 @@ void acquisition::Capture::load_cameras() {
                 img_msgs.push_back(sensor_msgs::ImagePtr());
 
                 sensor_msgs::CameraInfoPtr ci_msg(new sensor_msgs::CameraInfo());
+
                 //int image_width = 0;
                 //int image_height = 0;
                 nh_pvt_.getParam("image_height", image_height_);
@@ -214,6 +215,7 @@ void acquisition::Capture::load_cameras() {
                                 
                 std::string distortion_model = ""; 
                 nh_pvt_.getParam("distortion_model", distortion_model);
+
                 // distortion
                 ci_msg->distortion_model = distortion_model;
                 // binning
@@ -266,9 +268,7 @@ void acquisition::Capture::load_cameras() {
                 }
 
                 cam_info_msgs.push_back(ci_msg);
-
                 cam_counter++;
-                
             }
         }
         if (!current_cam_found) ROS_WARN_STREAM("   Camera "<<cam_ids_[j]<<" not detected!!!");
@@ -283,9 +283,8 @@ void acquisition::Capture::load_cameras() {
     PUBLISH_CAM_INFO_ = true;
 
     if (!EXTERNAL_TRIGGER_)
-		ROS_ASSERT_MSG(master_set,"The camera supposed to be the master isn't connected!");
+        ROS_ASSERT_MSG(master_set,"The camera supposed to be the master isn't connected!");
 }
-
 
 void acquisition::Capture::read_parameters() {
 
