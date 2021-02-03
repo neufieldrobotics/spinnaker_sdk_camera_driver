@@ -8,11 +8,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 ###
 # camera Acquisition specific 
 ###
-#SET("OpenCV_DIR" "~/apps/opencv-2.4.13/")
 set(PROJECT_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include" CACHE PATH "Project Include Directory")
-set(SPINNAKER_INCLUDE_DIR "/usr/include/spinnaker" CACHE PATH "Spinnaker Include Directory")
-set(SPINNAKER_LIB_DIR "/usr/lib" CACHE PATH "Spinnaker Libs Directory")
-# set(yaml-cpp_DIR "~/apps/yaml-cpp" CACHE PATH "yaml-cpp Directory")
 set(CUDA_USE_STATIC_CUDA_RUNTIME  OFF)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -25,13 +21,15 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   nodelet
 )
-
+find_package(trigger_msgs)
 #find_package(PCL REQUIRED)
 
 ###
 # Acquisition specific
 ###
 # Find Packages
+find_package(Spinnaker REQUIRED)
+message("spinnaker lib :   " ${Spinnaker_LIBRARIES})
 find_package(OpenCV REQUIRED)
 # use LibUnwind only for x86_64 or x86_32 architecture
 # do not use LibUnwind for arm architecture
@@ -50,6 +48,13 @@ if(Boost_FOUND)
 elseif(NOT Boost_FOUND)
   message("Boost not found!")
 endif()
+
+# configure a header file to pass some of the CMake settings
+# to the source code
+configure_file (
+  "${PROJECT_SOURCE_DIR}/include/spinnaker_sdk_camera_driver/spinnaker_configure.h.in"
+  "${PROJECT_SOURCE_DIR}/include/spinnaker_sdk_camera_driver/spinnaker_configure.h"
+)
 
 add_message_files(
   FILES
@@ -76,15 +81,15 @@ if(${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64 OR x86_32)
     include_directories(
       ${PROJECT_INCLUDE_DIR}
       ${catkin_INCLUDE_DIRS}
-      SYSTEM ${SPINNAKER_INCLUDE_DIR}
+      SYSTEM ${Spinnaker_INCLUDE_DIRS}
       SYSTEM ${OpenCV_INCLUDE_DIRS}
       SYSTEM ${Boost_INCLUDE_DIR}
       ${LibUnwind_INCLUDE_DIRS}
     )
 
-    link_directories( ${SPINNAKER_LIB_DIR} )
+    link_directories( ${Spinnaker_LIBRARIES} )
 
-    set (LIBS ${LibUnwind_LIBRARIES} Spinnaker ${OpenCV_LIBS} ${Boost_GENERAL})
+    set (LIBS ${LibUnwind_LIBRARIES} ${Spinnaker_LIBRARIES} ${OpenCV_LIBS} ${Boost_GENERAL})
     
 endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64 OR x86_32)
 if(${CMAKE_SYSTEM_PROCESSOR} MATCHES aarch64 OR arm)
@@ -97,14 +102,14 @@ if(${CMAKE_SYSTEM_PROCESSOR} MATCHES aarch64 OR arm)
     include_directories(
       ${PROJECT_INCLUDE_DIR}
       ${catkin_INCLUDE_DIRS}
-      SYSTEM ${SPINNAKER_INCLUDE_DIR}
+      SYSTEM ${Spinnaker_INCLUDE_DIRS}
       SYSTEM ${OpenCV_INCLUDE_DIRS}
       SYSTEM ${Boost_INCLUDE_DIR}
     )
 
-    link_directories( ${SPINNAKER_LIB_DIR} )
+    link_directories( ${Spinnaker_LIBRARIES} )
 
-    set (LIBS Spinnaker ${OpenCV_LIBS} ${Boost_GENERAL})
+    set (LIBS ${Spinnaker_LIBRARIES} ${OpenCV_LIBS} ${Boost_GENERAL})
     
 endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES aarch64 OR arm)
 

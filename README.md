@@ -3,8 +3,26 @@ master:
 dev: [![Build Status](https://travis-ci.org/neufieldrobotics/spinnaker_sdk_camera_driver.svg?branch=dev)](https://travis-ci.org/neufieldrobotics/spinnaker_sdk_camera_driver)
 
 # spinnaker_sdk_camera_driver
-
 These are the ros drivers for running the Pt Grey (FLIR) cameras that use the Spinnaker SDK.  This code has been tested with various Point Grey Blackfly S (BFS) cameras. 
+
+## Compatibility Matrix
+| Spinnaker | Architecture | Ubnuntu 16.04 Xenial +<br>ROS Kinetic  | Ubnuntu 18.04 Bionic +<br>ROS Melodic | Ubnuntu 20.04 Focal +<br>ROS Noetic |
+|-----------|:------------:|:--------------------------------------:|:-------------------------------------:|:-----------------------------------:|
+| 1.17.0.23 | AMD64        | :heavy_check_mark:                     |:heavy_minus_sign:                     |:heavy_minus_sign:                   |
+| 1.17.0.23 | ARM64        | :heavy_check_mark:                     |:heavy_minus_sign:                     |:heavy_minus_sign:                   |
+| 1.24.0.60 | AMD64        | :heavy_check_mark:                     |:heavy_minus_sign:                     |:heavy_minus_sign:                   |
+| 1.24.0.60 | ARM64        | :heavy_check_mark:                     |:heavy_minus_sign:                     |:heavy_minus_sign:                   |
+| 2.0.0.147 | AMD64        | :heavy_check_mark:                     |:white_check_mark:                     |:heavy_minus_sign:                   |
+| 2.0.0.147 | ARM64        | :heavy_check_mark:                     |                                       |:heavy_minus_sign:                   |
+| 2.2.0.48  | AMD64        | :heavy_minus_sign:                     |:heavy_check_mark:                     |                                     |
+| 2.2.0.48  | ARM64        | :heavy_minus_sign:                     |                                       |                                     |
+| 2.3.0.77  | AMD64        | :heavy_minus_sign:                     |                                       |                                     |
+| 2.3.0.77  | ARM64        | :heavy_minus_sign:                     |                                       |                                     |
+
+:heavy_check_mark: Tested 
+:heavy_minus_sign: Not Applicable 
+:white_check_mark: Reported to work 
+:x: Known compatibility Issue
 
 ## Getting Started
 
@@ -18,23 +36,25 @@ The pre-requisites for this repo include:
 * ros-kinetic-cv-bridge
 * ros-kinetic-image-transport
 
-**Incase of x86_64 or x86_32 architecture, also install *libunwind-dev* **
+#### After installing spinnaker, Verify that you can run your cameras with SpinView.
+
+#### For x86_64 or x86_32 architecture, install the following:
+* libunwind-dev
 
 ```bash
-# after installing spinnaker verify that you can run your cameras with SpinView
 
 # after installing ros, install other pre-requisites with: 
 
 sudo apt install libunwind-dev ros-kinetic-cv-bridge ros-kinetic-image-transport
+```
 
-# if you use arm64 (aarch64), install pre-requisites with: 
-
+####  For arm64 (aarch64) architecture, install pre-requisites with:
+```
 sudo apt install ros-kinetic-cv-bridge ros-kinetic-image-transport
-
 ```
 
 ### Installing
-To install the spinnaker drivers
+To install this spinnaker_sdk_camera_driver
 ```bash
 mkdir -p ~/spinnaker_ws/src
 cd spinnaker_ws/src
@@ -50,12 +70,11 @@ source ~/spinnaker_ws/devel/setup.bash
 Modify the `params/test_params.yaml` file replacing the cam-ids and master cam serial number to match your camera's serial number. Then run the code as:
 ```bash
 # To launch nodelet verison of driver, use #
+roslaunch spinnaker_sdk_camera_driver acquisition.launch
 
-roslaunch spinnaker_camera_driver acquisition.launch
+# To launch node version of driver, use #
+roslaunch spinnaker_sdk_camera_driver node_acquisition.launch
 
-# To launch node version of driver, use 
-
-roslaunch spinnaker_camera_driver node_acquisition.launch
 # Test that the images are being published by running
 rqt_image_view
 ```
@@ -69,7 +88,7 @@ All the parameters can be set via the launch file or via the yaml config_file.  
   Should color images be used (only works on models that support color images)
 * ~exposure_time (int, default: 0, 0:auto)  
   Exposure setting for cameras, also available as dynamic reconfiguarble parameter.
-  * ~external_trigger (bool, default: false)  
+* ~external_trigger (bool, default: false)  
   Camera triggering setting when using an external trigger.  In this mode, none of the cameras would be set as a master camera. All cameras are setup to use external trigger.  In this mode the main loop runs at rate set by soft_framerate, so if the external trigger rate is higher than the soft_framerate, the buffer will get filled and images will have a lag. Also in this mode, the getnextimage timeout is set to infinite so that the node dosen't die if a trigger is not received for a while.
 * ~target_grey_value (double, default: 0 , 0:Continous/auto)
   Setting target_grey_value > 4 (min:4 , max:99) will turn AutoExposureTargetGreyValueAuto to 'off' and set AutoExposureTargetGreyValue to target_grey_value. Also available as dynamic reconfigurable parameter. see below in Dynamic reconfigurable parameter section.
