@@ -1176,20 +1176,31 @@ void acquisition::Capture::write_queue_to_disk(queue<ImagePtr>* img_q, int cam_n
     while (imageCnt < k_numImages){
 //     ROS_DEBUG_STREAM("  Write Queue to Disk for cam: "<< cam_no <<" size = "<<img_q->size());
 
-        // sleep for 5 milliseconds if the queue is empty
-        if(img_q->empty() || sync_message_queue_vector_.at(cam_no).empty()){
-            boost::this_thread::sleep(boost::posix_time::milliseconds(5));
-            continue;
-        }
+        #ifdef trigger_msgs_FOUND
+            // sleep for 5 milliseconds if the queue is empty        
+            if(img_q->empty() || sync_message_queue_vector_.at(cam_no).empty()){
+                boost::this_thread::sleep(boost::posix_time::milliseconds(5));
+                continue;
+            }
+        #endif
+        
+        #ifndef trigger_msgs_FOUND
+            if(img_q->empty()){
+                boost::this_thread::sleep(boost::posix_time::milliseconds(5));
+                continue;
+            }
+        #endif
 
         ROS_DEBUG_STREAM("  Write Queue to Disk for cam: "<< cam_no <<" size = "<<img_q->size());
 
         if (img_q->size()>100)
             ROS_WARN_STREAM("  Queue "<<cam_no<<" size is :"<< img_q->size());
-            
-        if (abs((int)img_q->size() - (int)sync_message_queue_vector_.at(cam_no).size()) > 100){
-              ROS_WARN_STREAM(" The camera image size is increasing, the sync trigger messages are not coming at the desired rate");
-        }
+
+        #ifdef trigger_msgs_FOUND
+            if (abs((int)img_q->size() - (int)sync_message_queue_vector_.at(cam_no).size()) > 100){
+                  ROS_WARN_STREAM(" The camera image queue size is increasing, the sync trigger messages are not coming at the desired rate");
+            }
+        #endif
 
         ImagePtr convertedImage = img_q->front();
         
