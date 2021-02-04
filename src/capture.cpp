@@ -80,6 +80,7 @@ void acquisition::Capture::init_variables_register_to_ros() {
     // default values for the parameters are set here. Should be removed eventually!!
     exposure_time_ = 0 ; // default as 0 = auto exposure
     soft_framerate_ = 20; //default soft framrate
+    gain_ = 0;
     ext_ = ".bmp";
     SOFT_FRAME_RATE_CTRL_ = false;
     LIVE_ = false;
@@ -187,8 +188,8 @@ void acquisition::Capture::load_cameras() {
     for (int i=0; i<numCameras_; i++) {
         acquisition::Camera cam(camList_.GetByIndex(i));
         ROS_INFO_STREAM("  -"<< cam.get_id()
-                             <<" "<< cam.get_node_value("DeviceModelName")
-                             <<" "<< cam.get_node_value("DeviceVersion") );
+                             <<" "<< cam.getTLNodeStringValue("DeviceModelName")
+                             <<" "<< cam.getTLNodeStringValue("DeviceVersion") );
     }
 
     bool master_set = false;
@@ -474,6 +475,14 @@ void acquisition::Capture::read_parameters() {
         else ROS_INFO("  'exposure_time'=%0.f, Setting autoexposure",exposure_time_);
     } else ROS_WARN("  'exposure_time' Parameter not set, using default behavior: Automatic Exposure ");
 
+    if(nh_pvt_.getParam("gain", gain_)){
+       if(gain_>0){
+          ROS_INFO("gain value set to:%.1f",gain_);
+       }
+       else ROS_INFO("  'gain' Parameter was zero or negative, using Auto gain based on target grey value");
+    } 
+    else ROS_WARN("  'gain' Parameter not set, using default behavior: Auto gain based on target grey value");
+
     if (nh_pvt_.getParam("target_grey_value", target_grey_value_)){
         if (target_grey_value_ >0) ROS_INFO("  target_grey_value set to: %.1f",target_grey_value_);
         else ROS_INFO("  'target_grey_value'=%0.f, Setting AutoExposureTargetGreyValueAuto to Continuous/ auto",target_grey_value_);} 
@@ -694,6 +703,21 @@ void acquisition::Capture::init_cameras(bool soft = false) {
                 } else {
                     cams[i].setEnumValue("ExposureAuto", "Continuous");
                 }
+                
+                if(gain_>0){ //fixed gain
+                    cams[i].setEnumValue("GainAuto", "Off");
+                    double max_gain_allowed = cams[i].getFloatValueMax("Gain");
+                    if (gain_ <= max_gain_allowed)
+                        cams[i].setFloatValue("Gain", gain_);
+                    else {
+                        cams[i].setFloatValue("Gain", max_gain_allowed);
+                        ROS_WARN("Provided Gain value is higher than max allowed, setting gain to %f", max_gain_allowed);
+                    }
+                    target_grey_value_ = 50;
+                } else {
+                    cams[i].setEnumValue("GainAuto","Continuous");                   
+                }
+
                 if (target_grey_value_ > 4.0) {
                     cams[i].setEnumValue("AutoExposureTargetGreyValueAuto", "Off");
                     cams[i].setFloatValue("AutoExposureTargetGreyValue", target_grey_value_);
@@ -706,7 +730,7 @@ void acquisition::Capture::init_cameras(bool soft = false) {
                 // cams[i].setFloatValue("AcquisitionFrameRate", 5.0);
 
                 if (color_)
-                    cams[i].setEnumValue("PixelFormat", "BGR8");
+                        cams[i].setEnumValue("PixelFormat", "BGR8");
                     else
                         cams[i].setEnumValue("PixelFormat", "Mono8");
                 cams[i].setEnumValue("AcquisitionMode", "Continuous");
@@ -1230,7 +1254,7 @@ void acquisition::Capture::write_queue_to_disk(queue<ImagePtr>* img_q, int cam_n
         convertedImage->Save(filename.str().c_str());
         // release the image before popping out to save memory
         convertedImage->Release();
-        ROS_INFO("image Queue size for cam %d is = %d",cam_no,img_q->size());
+        ROS_INFO("image Queue size for cam %d is = %zu",cam_no, img_q->size());
         queue_mutex_.lock();
         img_q->pop();
         queue_mutex_.unlock();
