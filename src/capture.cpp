@@ -139,6 +139,7 @@ void acquisition::Capture::init_variables_register_to_ros() {
     // Retrieve singleton reference to system object
     ROS_INFO_STREAM("*** SYSTEM INFORMATION ***");
     ROS_INFO_STREAM("Creating system instance...");
+    ROS_INFO_STREAM("spinnaker_sdk_camera_driver package version: " << spinnaker_sdk_camera_driver_VERSION);
     system_ = System::GetInstance();
     
     const LibraryVersion spinnakerLibraryVersion = system_->GetLibraryVersion();

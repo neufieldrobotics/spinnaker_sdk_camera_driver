@@ -113,6 +113,9 @@ if(${CMAKE_SYSTEM_PROCESSOR} MATCHES aarch64 OR arm)
     
 endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES aarch64 OR arm)
 
+# Make package version available in CPP as a defination
+add_definitions("-D${PROJECT_NAME}_VERSION=\"${${PROJECT_NAME}_VERSION}\"")
+
 add_library (acquilib SHARED
   src/capture.cpp
   src/camera.cpp
