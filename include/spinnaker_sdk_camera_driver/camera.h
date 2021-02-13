@@ -59,10 +59,15 @@ namespace acquisition {
         // void setTrigMode();
         // void setTriggerOverlapOff();
 
-        string get_id() { return string(pCam_->GetUniqueID()); }
+        string getTLNodeStringValue(string node_string);
+        double getFloatValueMax(string node_string);
+        string get_id();
         void make_master() { MASTER_ = true; ROS_DEBUG_STREAM( "camera " << get_id() << " set as master"); }
         bool is_master() { return MASTER_; }
         void set_color(bool flag) { COLOR_ = flag; }
+        void setGetNextImageTimeout(uint64_t get_next_image_timeout) { GET_NEXT_IMAGE_TIMEOUT_ = get_next_image_timeout; }
+        bool verifyBinning(int binningDesired);
+        void calibrationParamsTest(int calibrationWidth, int calibrationHeight);
         
     private:
 

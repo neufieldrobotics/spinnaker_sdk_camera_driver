@@ -1,0 +1,39 @@
+language: minimal
+
+services:
+  - docker
+
+matrix:
+  include:
+   - arch: amd64
+     env : DOCKER_IMAGE=ros:melodic-perception-bionic SPINNAKER_VERSION=2.0.0.147
+   - arch: amd64
+     env : DOCKER_IMAGE=ros:kinetic-perception-xenial SPINNAKER_VERSION=2.0.0.147
+   - arch: amd64
+     env : DOCKER_IMAGE=ros:melodic-perception-bionic SPINNAKER_VERSION=2.2.0.48
+   - arch: amd64
+     env : DOCKER_IMAGE=ros:kinetic-perception-xenial SPINNAKER_VERSION=1.24.0.60
+   - arch: amd64
+     env : DOCKER_IMAGE=ros:melodic-perception-bionic SPINNAKER_VERSION=1.24.0.60
+   - arch: arm64
+     env : DOCKER_IMAGE=arm64v8/ros:kinetic-perception-xenial SPINNAKER_VERSION=2.0.0.147
+   - arch: arm64
+     env : DOCKER_IMAGE=arm64v8/ros:melodic-perception-bionic SPINNAKER_VERSION=2.0.0.147
+
+before_install:
+- docker pull $DOCKER_IMAGE
+
+script:
+- echo TRAVIS_BUILD_DIR is $TRAVIS_BUILD_DIR
+- >
+  docker run
+  -v $TRAVIS_BUILD_DIR:/ros_ws/src/spinnaker_sdk_camera_driver/
+  --env SPINNAKER_VERSION=$SPINNAKER_VERSION
+  --env SPINNAKER_LINUX_ARCH=$TRAVIS_CPU_ARCH
+  $DOCKER_IMAGE
+  /bin/bash -c 
+  "
+  /ros_ws/src/spinnaker_sdk_camera_driver/download_and_install_spinnaker.sh;
+  cd /ros_ws;
+  catkin_make
+  "

@@ -1,0 +1,23 @@
+cam_ids:
+- 17197559
+cam_aliases:
+- cam0
+skip: 20
+delay: 1.0
+
+flip_horizontal:
+- false
+
+flip_vertical:
+- false
+
+# Assign all the follwing via launch file to prevent confusion and conflict
+
+#save_path: ~/projects/data
+#save_type: .bmp #binary or .tiff or .bmp
+#binning: 1 # going from 2 to 1 requires cameras to be unplugged and replugged
+#color: false
+#frames: 50
+#soft_framerate: 4 # this frame rate reflects to the software frame rate set using ros::rate
+#exp: 997
+#to_ros: true  #When to_ros is not selected, but live is selected, pressing 'space' exports single image to ROS

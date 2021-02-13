@@ -8,11 +8,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 ###
 # camera Acquisition specific 
 ###
-#SET("OpenCV_DIR" "~/apps/opencv-2.4.13/")
 set(PROJECT_INCLUDE_DIR "${PROJECT_SOURCE_DIR}/include" CACHE PATH "Project Include Directory")
-#set(SPINNAKER_INCLUDE_DIR "/usr/include/spinnaker" CACHE PATH "Spinnaker Include Directory")
-#set(SPINNAKER_LIB_DIR "/usr/lib" CACHE PATH "Spinnaker Libs Directory")
-# set(yaml-cpp_DIR "~/apps/yaml-cpp" CACHE PATH "yaml-cpp Directory")
 set(CUDA_USE_STATIC_CUDA_RUNTIME  OFF)
 
 find_package(catkin REQUIRED COMPONENTS
@@ -25,7 +21,7 @@ find_package(catkin REQUIRED COMPONENTS
   dynamic_reconfigure
   nodelet
 )
-
+find_package(trigger_msgs)
 #find_package(PCL REQUIRED)
 
 ###
@@ -52,6 +48,13 @@ if(Boost_FOUND)
 elseif(NOT Boost_FOUND)
   message("Boost not found!")
 endif()
+
+# configure a header file to pass some of the CMake settings
+# to the source code
+configure_file (
+  "${PROJECT_SOURCE_DIR}/include/spinnaker_sdk_camera_driver/spinnaker_configure.h.in"
+  "${PROJECT_SOURCE_DIR}/include/spinnaker_sdk_camera_driver/spinnaker_configure.h"
+)
 
 add_message_files(
   FILES
@@ -110,31 +113,27 @@ if(${CMAKE_SYSTEM_PROCESSOR} MATCHES aarch64 OR arm)
     
 endif(${CMAKE_SYSTEM_PROCESSOR} MATCHES aarch64 OR arm)
 
+# Make package version available in CPP as a defination
+add_definitions("-D${PROJECT_NAME}_VERSION=\"${${PROJECT_NAME}_VERSION}\"")
+
 add_library (acquilib SHARED
   src/capture.cpp
   src/camera.cpp
 )
-
 add_dependencies(acquilib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 target_link_libraries(acquilib ${LIBS} ${catkin_LIBRARIES})
-
-add_library(capture_nodelet src/capture_nodelet.cpp src/subscriber_nodelet.cpp)
-target_link_libraries(capture_nodelet acquilib ${catkin_LIBRARIES})
 
 add_executable (acquisition_node src/acquisition_node.cpp)
 add_dependencies(acquisition_node acquilib ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
 target_link_libraries (acquisition_node acquilib ${LIBS} ${catkin_LIBRARIES})
 
+## subscriber_example for subscribing as nodelet
+add_library (subscriber_example examples/subscriber_nodelet.cpp)
+add_dependencies(subscriber_example ${catkin_EXPORTED_TARGETS})
+target_link_libraries(subscriber_example ${catkin_LIBRARIES})
 
-add_executable (acquisition_nodelet src/acquisition_nodelet.cpp)
-add_dependencies(acquisition_nodelet acquilib capture_nodelet ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
-target_link_libraries (acquisition_nodelet acquilib capture_nodelet ${LIBS} ${catkin_LIBRARIES})
 
-add_executable (nodelet_test src/nodelet_test.cpp)
-add_dependencies(nodelet_test ${catkin_EXPORTED_TARGETS})
-target_link_libraries (nodelet_test capture_nodelet ${LIBS} ${catkin_LIBRARIES})
-
-install(TARGETS acquilib acquisition_node capture_nodelet acquisition_nodelet nodelet_test
+install(TARGETS acquilib acquisition_node subscriber_example
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -143,4 +142,8 @@ install(TARGETS acquilib acquisition_node capture_nodelet acquisition_nodelet no
 install(DIRECTORY include
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
   FILES_MATCHING PATTERN "*.h"
+)
+
+install(FILES nodelet_plugins.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )

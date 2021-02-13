@@ -1,6 +1,28 @@
-# spinnaker_sdk_camera_driver
+master: 
+[![Build Status](https://travis-ci.org/neufieldrobotics/spinnaker_sdk_camera_driver.svg?branch=master)](https://travis-ci.org/neufieldrobotics/spinnaker_sdk_camera_driver)
+dev: [![Build Status](https://travis-ci.org/neufieldrobotics/spinnaker_sdk_camera_driver.svg?branch=dev)](https://travis-ci.org/neufieldrobotics/spinnaker_sdk_camera_driver)
 
+# spinnaker_sdk_camera_driver
 These are the ros drivers for running the Pt Grey (FLIR) cameras that use the Spinnaker SDK.  This code has been tested with various Point Grey Blackfly S (BFS) cameras. 
+
+## Compatibility Matrix
+| Spinnaker | Architecture | Ubnuntu 16.04 Xenial +<br>ROS Kinetic  | Ubnuntu 18.04 Bionic +<br>ROS Melodic | Ubnuntu 20.04 Focal +<br>ROS Noetic |
+|-----------|:------------:|:--------------------------------------:|:-------------------------------------:|:-----------------------------------:|
+| 1.17.0.23 | AMD64        | :heavy_check_mark:                     |:heavy_minus_sign:                     |:heavy_minus_sign:                   |
+| 1.17.0.23 | ARM64        | :heavy_check_mark:                     |:heavy_minus_sign:                     |:heavy_minus_sign:                   |
+| 1.24.0.60 | AMD64        | :heavy_check_mark:                     |:heavy_minus_sign:                     |:heavy_minus_sign:                   |
+| 1.24.0.60 | ARM64        | :heavy_check_mark:                     |:heavy_minus_sign:                     |:heavy_minus_sign:                   |
+| 2.0.0.147 | AMD64        | :heavy_check_mark:                     |:white_check_mark:                     |:heavy_minus_sign:                   |
+| 2.0.0.147 | ARM64        | :heavy_check_mark:                     |                                       |:heavy_minus_sign:                   |
+| 2.2.0.48  | AMD64        | :heavy_minus_sign:                     |:heavy_check_mark:                     |                                     |
+| 2.2.0.48  | ARM64        | :heavy_minus_sign:                     |                                       |                                     |
+| 2.3.0.77  | AMD64        | :heavy_minus_sign:                     |                                       |                                     |
+| 2.3.0.77  | ARM64        | :heavy_minus_sign:                     |                                       |                                     |
+
+:heavy_check_mark: Tested 
+:heavy_minus_sign: Not Applicable 
+:white_check_mark: Reported to work 
+:x: Known compatibility Issue
 
 ## Getting Started
 
@@ -48,15 +70,12 @@ source ~/spinnaker_ws/devel/setup.bash
 Modify the `params/test_params.yaml` file replacing the cam-ids and master cam serial number to match your camera's serial number. Then run the code as:
 ```bash
 # To launch nodelet verison of driver, use #
-
 roslaunch spinnaker_sdk_camera_driver acquisition.launch
 
 # To launch node version of driver, use #
-
-roslaunch spinnaker_sdk_camera_driver acquisition_node.launch
+roslaunch spinnaker_sdk_camera_driver node_acquisition.launch
 
 # Test that the images are being published by running
-
 rqt_image_view
 ```
 ## Parmeters
@@ -69,6 +88,8 @@ All the parameters can be set via the launch file or via the yaml config_file.  
   Should color images be used (only works on models that support color images)
 * ~exposure_time (int, default: 0, 0:auto)  
   Exposure setting for cameras, also available as dynamic reconfiguarble parameter.
+* ~external_trigger (bool, default: false)  
+  Camera triggering setting when using an external trigger.  In this mode, none of the cameras would be set as a master camera. All cameras are setup to use external trigger.  In this mode the main loop runs at rate set by soft_framerate, so if the external trigger rate is higher than the soft_framerate, the buffer will get filled and images will have a lag. Also in this mode, the getnextimage timeout is set to infinite so that the node dosen't die if a trigger is not received for a while.
 * ~target_grey_value (double, default: 0 , 0:Continous/auto)
   Setting target_grey_value > 4 (min:4 , max:99) will turn AutoExposureTargetGreyValueAuto to 'off' and set AutoExposureTargetGreyValue to target_grey_value. Also available as dynamic reconfigurable parameter. see below in Dynamic reconfigurable parameter section.
 * ~frames (int, default: 50)  
@@ -81,7 +102,7 @@ All the parameters can be set via the launch file or via the yaml config_file.  
   Flag whether images should be saved or not (via opencv mat objects to disk)
 * ~save_path (string, default: "\~/projects/data")  
   Location to save the image data
-* \~save_type (string, default: "bmp")  
+* ~save_type (string, default: "bmp")  
   Type of file type to save to when saving images locally: binary, tiff, bmp, jpeg etc.
 * ~soft_framerate (int, default: 20)  
   When hybrid software triggering is used, this controls the FPS, 0=as fast as possible
@@ -93,6 +114,18 @@ All the parameters can be set via the launch file or via the yaml config_file.  
   Flag whether each image should have Unique timestamps vs the master cams time stamp for all
 * ~max_rate_save (bool, default: false)  
   Flag for max rate mode which is when the master triggers the slaves and saves images at maximum rate possible.  This is the multithreaded mode
+* ~flip_horizontal (bool, default: false)  
+  Flag to flip image horizontally on camera itself, this is not a rotate only a mirror image. This setting does enumeration: "reverseX". It should be specified for all cameras or can be left unspecified for all cameras for default behaviour.
+ * ~flip_vertical (bool, default: false)  
+  Flag to flip image vertically on camera itself, this is not a rotate only a mirror image. This setting does enumeration: "reverseY". It should be specified for all cameras or can be left unspecified for all cameras for default behaviour.
+  If both horizontal and vertical flags are true, then it is equivalent to rotating 180deg.	
+  * ~region_of_interest (dict, default = { width: 0,  height: 0, x_offset: 0, y_offset: 0 }
+  Specify the region of interest in the camera image as dict with width, height, x_offset and y_offset. Width and height specify size of the final image (should be smaller than sensor size). X and Y offsets specify the image origin. The offset plus image size should be smaller than the sensor size.
+
+### node/nodelet Specific Parameters
+* ~tf_prefix (string, default: "")  
+  tf_prefix will be pre-fixed to (existing cam_*_optical_frame) frame id in ros Image msg and cameraInfo msg. default option doesn't add any prefix to frame id. eg: uas1/cam_0_optical_frame if tf_prefix:= uas1
+
 
 ### System configuration parameters
 * ~cam_ids (yaml sequence or array)  
@@ -120,11 +153,11 @@ This is the names that would be given to the cameras for filenames and rostopics
   When exposure_time is set to 0(zero), the ExposureAuto is set to 'Continuous', enabling auto exposure.
 
 ### nodelet details
-* ~nodelet_manager_name (string, default: vision_nodelet_manager)
+* ~manager (string, default: vision_nodelet_manager)
   Specify the name of the nodelet_manager under which nodelet to be launched.
-* ~start_nodelet_manager (bool, default: false)
-  If set True, nodelet_manager of name $(arg nodelet_manager_name) will be launched.
-  If set False(default), the acquisition/capture_nodelet waits for the nodelet_manager name $(arg nodelet_manager_name).
+* ~external_manager (bool, default: false)
+  If set False(default), nodelet_manager of name $(arg manager) will be launched.
+  If set True, the acquisition/Capture waits for the nodelet_manager name $(arg manager).
 
 ### Camera info message details
 * ~image_width (int)

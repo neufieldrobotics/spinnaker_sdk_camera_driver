@@ -4,7 +4,7 @@
 #include "std_include.h"
 #include "serialization.h"
 #include "camera.h"
-
+#include "spinnaker_configure.h"
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/filesystem.hpp>
 //ROS
@@ -18,6 +18,14 @@
 
 #include <sstream>
 #include <image_transport/image_transport.h>
+// nodelets
+#include <nodelet/nodelet.h>
+#include <nodelet/loader.h>
+#include "pluginlib/class_list_macros.h"
+
+#ifdef trigger_msgs_FOUND
+  #include <trigger_msgs/sync_trigger.h>
+#endif 
 
 using namespace Spinnaker;
 using namespace Spinnaker::GenApi;
@@ -27,16 +35,18 @@ using namespace std;
 
 namespace acquisition {
     
-    class Capture {
+    class Capture : public nodelet::Nodelet {
 
     public:
     
         ~Capture();
         Capture();
-        Capture( ros::NodeHandle node,ros::NodeHandle private_nh);
+        virtual void onInit();
+        
+        std::shared_ptr<boost::thread> pubThread_;
 
         void load_cameras();
-        
+        void init_variables_register_to_ros();
         void init_array();
         void init_cameras(bool);
         void start_acquisition();
@@ -44,6 +54,7 @@ namespace acquisition {
         void deinit_cameras();
         void acquire_mat_images(int);
         void run();
+        void run_external_trig();
         void run_soft_trig();
         void run_mt();
         void publish_to_ros(int, char**, float);
@@ -66,7 +77,7 @@ namespace acquisition {
         void update_grid();
         void export_to_ROS();
         void dynamicReconfigureCallback(spinnaker_sdk_camera_driver::spinnaker_camConfig &config, uint32_t level);
-
+       
         float mem_usage();
     
         SystemPtr system_;    
@@ -86,6 +97,8 @@ namespace acquisition {
         vector<vector<double>> rect_coeff_vec_;
         vector<vector<double>> proj_coeff_vec_;
         vector<string> imageNames;
+        vector<bool> flip_horizontal_vec_;
+        vector<bool> flip_vertical_vec_;
            
         string path_;
         string todays_date_;
@@ -102,17 +115,22 @@ namespace acquisition {
         string dump_img_;
         string ext_;
         float exposure_time_;
+        float gain_;
         double target_grey_value_;
+        bool first_image_received;
         // int decimation_;
-
+        string tf_prefix_;        
         int soft_framerate_; // Software (ROS) frame rate
         
         int MASTER_CAM_;
         int CAM_; // active cam during live
+        int image_width_;
+        int image_height_;
 
         bool FIXED_NUM_FRAMES_;
         bool TIME_BENCHMARK_;
         bool MASTER_TIMESTAMP_FOR_ALL_;
+        bool EXTERNAL_TRIGGER_;
         bool SAVE_;
         bool SAVE_BIN_;
         bool MANUAL_TRIGGER_;
@@ -124,16 +142,39 @@ namespace acquisition {
         bool EXPORT_TO_ROS_;
         bool MAX_RATE_SAVE_;
         bool PUBLISH_CAM_INFO_;
+        bool VERIFY_BINNING_;
+        uint64_t SPINNAKER_GET_NEXT_IMAGE_TIMEOUT_;
+        
+        #ifdef trigger_msgs_FOUND
+            ros::Time latest_imu_trigger_time_;
+            uint32_t prev_imu_trigger_count_ = 0; 
+            uint32_t latest_imu_trigger_count_;
+
+            void assignTimeStampCallback(const trigger_msgs::sync_trigger::ConstPtr& msg);
+            struct SyncInfo_{
+                uint32_t latest_imu_trigger_count_;
+                ros::Time latest_imu_trigger_time_;
+            };
+            std::vector<std::queue<SyncInfo_>> sync_message_queue_vector_;
+            ros::Subscriber timeStamp_sub;
+        #endif
+        
+        
+        bool region_of_interest_set_;
+        int region_of_interest_width_;
+        int region_of_interest_height_;
+        int region_of_interest_x_offset_;
+        int region_of_interest_y_offset_;
 
         // grid view related variables
         bool GRID_CREATED_;
         Mat grid_;
-
+    
         // ros variables
         ros::NodeHandle nh_;
         ros::NodeHandle nh_pvt_;
-        //image_transport::ImageTransport it_;
-        image_transport::ImageTransport it_;
+        std::shared_ptr<image_transport::ImageTransport> it_;
+
         dynamic_reconfigure::Server<spinnaker_sdk_camera_driver::spinnaker_camConfig>* dynamicReCfgServer_;
 
         ros::Publisher acquisition_pub;

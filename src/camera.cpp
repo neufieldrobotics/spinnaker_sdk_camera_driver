@@ -2,7 +2,7 @@
 
 acquisition::Camera::~Camera() {
 
-    pCam_ = NULL;
+    pCam_ = nullptr;
     timestamp_ = 0;
 
 }
@@ -21,8 +21,7 @@ acquisition::Camera::Camera(CameraPtr pCam) {
     frameID_ = -1;
     MASTER_ = false;
     timestamp_ = 0;
-    GET_NEXT_IMAGE_TIMEOUT_ = 2000;
-    
+    GET_NEXT_IMAGE_TIMEOUT_ = EVENT_TIMEOUT_INFINITE;
 }
 
 void acquisition::Camera::init() {
@@ -38,31 +37,38 @@ void acquisition::Camera::deinit() {
 }
 
 ImagePtr acquisition::Camera::grab_frame() {
+    ImagePtr pResultImage;
+    try{
+        pResultImage = pCam_->GetNextImage(GET_NEXT_IMAGE_TIMEOUT_);
+        // Check if the Image is complete
 
-    ImagePtr pResultImage = pCam_->GetNextImage(GET_NEXT_IMAGE_TIMEOUT_);
-    // Check if the Image is complete
+        if (pResultImage->IsIncomplete()) {
 
-    if (pResultImage->IsIncomplete()) {
-        
-        ROS_WARN_STREAM("Image incomplete with image status " << pResultImage->GetImageStatus() << "!");
+            ROS_WARN_STREAM("Image incomplete with image status " << pResultImage->GetImageStatus() << "!");
 
-    } else {
-
-        timestamp_ = pResultImage->GetTimeStamp();
-    
-        if (frameID_ >= 0) {
-            lastFrameID_ = frameID_;
-            frameID_ = pResultImage->GetFrameID();
-            ROS_WARN_STREAM_COND(frameID_ > lastFrameID_ + 1,"Frames are being skipped!");
         } else {
-            frameID_ = pResultImage->GetFrameID();
-            ROS_ASSERT_MSG(frameID_ == 0 ,"First frame ID was not zero! Might cause sync issues later...");
+
+            timestamp_ = pResultImage->GetTimeStamp();
+
+            if (frameID_ >= 0) {
+                lastFrameID_ = frameID_;
+                frameID_ = pResultImage->GetFrameID();
+                ROS_WARN_STREAM_COND(frameID_ > lastFrameID_ + 1,"Frames are being skipped!");
+            } else {
+                frameID_ = pResultImage->GetFrameID();
+                ROS_ASSERT_MSG(frameID_ == 0 ,"First frame ID was not zero! Might cause sync issues later...");
+            }
+
         }
 
+        ROS_DEBUG_STREAM("Grabbed frame from camera " << get_id() << " with timestamp " << timestamp_*1000);
+        return pResultImage;
+    }
+    catch(Spinnaker::Exception &e){
+       ROS_FATAL_STREAM(e.what()<<"\n Likely reason is that slaves are not triggered. Check GPIO cables\n");
     }
 
-    ROS_DEBUG_STREAM("Grabbed frame from camera " << get_id() << " with timestamp " << timestamp_*1000);
-    return pResultImage;    
+    return pResultImage;
 }
 
 // Returns last timestamp
@@ -82,8 +88,14 @@ int acquisition::Camera::get_frame_id() {
 
 Mat acquisition::Camera::grab_mat_frame() {
 
-    ImagePtr pResultImage = grab_frame();
-    return convert_to_mat(pResultImage);
+    try{
+        ImagePtr pResultImage = grab_frame();
+        return convert_to_mat(pResultImage);
+    }
+    catch(Spinnaker::Exception &e){
+        ros::shutdown();
+    }
+
 
 }
 
@@ -186,8 +198,7 @@ void acquisition::Camera::setBoolValue(string setting, bool val) {
     if (!IsAvailable(ptr) || !IsWritable(ptr)) {
         ROS_FATAL_STREAM("Unable to set " << setting << " to " << val << " (ptr retrieval). Aborting...");
     }
-    if (val) ptr->SetValue("True");
-		else ptr->SetValue("False");
+    ptr->SetValue(val);
 
     ROS_DEBUG_STREAM(setting << " set to " << val);
     
@@ -235,7 +246,6 @@ void acquisition::Camera::adcBitDepth(gcstring bitDep) {
 }
 
 void acquisition::Camera::setBufferSize(int numBuf) {
-
     INodeMap & sNodeMap = pCam_->GetTLStreamNodeMap();
     CIntegerPtr StreamNode = sNodeMap.GetNode("StreamDefaultBufferCount");
     int64_t bufferCount = StreamNode->GetValue();
@@ -296,6 +306,35 @@ void acquisition::Camera::trigger() {
     
 }
 
+double acquisition::Camera::getFloatValueMax(string node_string) {
+    INodeMap& nodeMap = pCam_->GetNodeMap();
+
+    CFloatPtr ptrNodeValue = nodeMap.GetNode(node_string.c_str());
+
+    if (IsAvailable(ptrNodeValue)){
+      //cout << "\tMax " << ptrNodeValue->GetValue() << "..." << endl;
+      return ptrNodeValue->GetMax();
+    } else {
+        ROS_FATAL_STREAM("Node " << node_string << " not available" << endl);
+        return -1;
+    }
+}
+
+
+string acquisition::Camera::getTLNodeStringValue(string node_string) {
+    INodeMap& nodeMap = pCam_->GetTLDeviceNodeMap();
+    CStringPtr ptrNodeValue = nodeMap.GetNode(node_string.c_str());
+    if (IsReadable(ptrNodeValue)){
+        return string(ptrNodeValue->GetValue());
+    } else{
+        ROS_FATAL_STREAM("Node " << node_string << " not readable" << endl);
+        return "";
+    }
+}
+
+string acquisition::Camera::get_id() {
+    return getTLNodeStringValue("DeviceSerialNumber");
+}
 
 void acquisition::Camera::targetGreyValueTest() {
     CFloatPtr ptrExpTest =pCam_->GetNodeMap().GetNode("AutoExposureTargetGreyValue");
@@ -318,4 +357,17 @@ void acquisition::Camera::exposureTest() {
     float expTime=ptrExpTest->GetValue();
     ROS_DEBUG_STREAM("Exposure Time: "<<expTime<<endl);
 
+}
+bool acquisition::Camera::verifyBinning(int binningDesired) {
+    int actualBinningX =  (pCam_ ->SensorWidth())/(pCam_ ->Width());
+    int actualBinningY =  (pCam_ ->SensorHeight())/(pCam_ ->Height());
+    if (binningDesired == actualBinningX) return true;
+    else return false;
+}
+
+void acquisition::Camera::calibrationParamsTest(int calibrationWidth, int calibrationHeight) {
+    if ( (pCam_ ->SensorWidth()) != calibrationWidth )
+        ROS_WARN_STREAM(" Looks like your calibration is not done at full Sensor Resolution for cam_id = "<<get_id()<<" , Sensor_Width = "<<(pCam_ ->SensorWidth()) <<" given cameraInfo params:width = "<<calibrationWidth);
+    if ( (pCam_ ->SensorHeight()) != calibrationHeight )
+        ROS_WARN_STREAM(" Looks like your calibration is not done at full Sensor Resolution for cam_id = "<<get_id()<<" , Sensor_Height= "<<(pCam_ ->SensorHeight()) <<" given cameraInfo params:height = "<<calibrationHeight);
 }
