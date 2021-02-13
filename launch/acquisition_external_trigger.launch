@@ -6,7 +6,7 @@
   <arg name="binning"           default="1"      doc="Binning for cameras, when changing from 2 to 1 cameras need to be unplugged and replugged"/>
   <arg name="color"             default="false"  doc="Should color images be used (only works on models that support color images)"/>
   <arg name="exposure_time"     default="0"      doc="Exposure_time setting for cameras"/>
-  <arg name="external_trigger"  default="false"  doc="External trigger (No camera is master)"/>
+  <arg name="external_trigger"  default="true"   doc="External trigger (No camera is master)"/>
   <arg name="gain"              default="0"      doc="Gain setting. Gain should be positive (full range - 0 - 18 dB for blackfly-s camera) 
                                                       or zero (auto gain). if gain > max, it will be set to max allowed value.
                                                       Default is 0, auto gain which is set according to target grey value or autoexposure settings"/>
@@ -35,9 +35,9 @@
 
   <!-- Capture nodelet params-->
   <arg name="tf_prefix" default="" doc="will prefix (arg tf_prefix)/ to existing frame_id in Image msg and camerainfo msg" />
-  <arg name="config_file"          default="$(find spinnaker_sdk_camera_driver)/params/test_params.yaml" doc="File specifying the parameters of the camera_array"/>
+  <arg name="config_file"          default="$(find spinnaker_sdk_camera_driver)/params/external_trigger_params.yaml" doc="File specifying the parameters of the camera_array"/>
 
-   <!-- start the nodelet manager if $(arg start_nodelet_manager) is true-->
+  <!-- start the nodelet manager if $(arg start_nodelet_manager) is true-->
   <node pkg="nodelet" type="nodelet" name="$(arg manager)" args="manager" output="screen" unless="$(arg external_manager)" />
 
   <!-- load the acquisition nodelet -->
@@ -49,7 +49,7 @@
 
     <!-- Load parameters onto server using argument or default values above -->
     <param name="exposure_time"     value="$(arg exposure_time)" />
-    <param name="external_trigger"     value="$(arg external_trigger)" />
+    <param name="external_trigger"  value="$(arg external_trigger)" />
     <param name="gain"              value="$(arg gain)"/>
     <param name="target_grey_value" value="$(arg target_grey_value)" />
     <param name="binning"           value="$(arg binning)" />

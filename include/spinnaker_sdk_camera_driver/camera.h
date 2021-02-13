@@ -59,7 +59,8 @@ namespace acquisition {
         // void setTrigMode();
         // void setTriggerOverlapOff();
 
-        string get_node_value(string node_string);
+        string getTLNodeStringValue(string node_string);
+        double getFloatValueMax(string node_string);
         string get_id();
         void make_master() { MASTER_ = true; ROS_DEBUG_STREAM( "camera " << get_id() << " set as master"); }
         bool is_master() { return MASTER_; }

@@ -306,17 +306,34 @@ void acquisition::Camera::trigger() {
     
 }
 
-string acquisition::Camera::get_node_value(string node_string) {
+double acquisition::Camera::getFloatValueMax(string node_string) {
+    INodeMap& nodeMap = pCam_->GetNodeMap();
+
+    CFloatPtr ptrNodeValue = nodeMap.GetNode(node_string.c_str());
+
+    if (IsAvailable(ptrNodeValue)){
+      //cout << "\tMax " << ptrNodeValue->GetValue() << "..." << endl;
+      return ptrNodeValue->GetMax();
+    } else {
+        ROS_FATAL_STREAM("Node " << node_string << " not available" << endl);
+        return -1;
+    }
+}
+
+
+string acquisition::Camera::getTLNodeStringValue(string node_string) {
     INodeMap& nodeMap = pCam_->GetTLDeviceNodeMap();
     CStringPtr ptrNodeValue = nodeMap.GetNode(node_string.c_str());
     if (IsReadable(ptrNodeValue)){
         return string(ptrNodeValue->GetValue());
+    } else{
+        ROS_FATAL_STREAM("Node " << node_string << " not readable" << endl);
+        return "";
     }
-    return "";
 }
 
 string acquisition::Camera::get_id() {
-    return get_node_value("DeviceSerialNumber");
+    return getTLNodeStringValue("DeviceSerialNumber");
 }
 
 void acquisition::Camera::targetGreyValueTest() {
