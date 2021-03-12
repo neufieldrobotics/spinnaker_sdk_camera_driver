@@ -1036,7 +1036,7 @@ void acquisition::Capture::run_soft_trig() {
     }
 
 
-    ros::Rate ros_rate(soft_framerate_);
+    ros::Rate ros_rate(SOFT_FRAME_RATE_CTRL_? soft_framerate_: 1.0);
     try{
         while( ros::ok() ) {
 
