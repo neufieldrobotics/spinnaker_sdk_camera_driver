@@ -109,7 +109,6 @@ namespace acquisition {
         int nframes_;
         float init_delay_;
         int skip_num_;
-        float master_fps_;
         int binning_;
         bool color_;
         string dump_img_;
@@ -133,7 +132,6 @@ namespace acquisition {
         bool EXTERNAL_TRIGGER_;
         bool SAVE_;
         bool SAVE_BIN_;
-        bool MANUAL_TRIGGER_;
         bool LIVE_;
         bool CAM_DIRS_CREATED_;
         bool GRID_VIEW_;

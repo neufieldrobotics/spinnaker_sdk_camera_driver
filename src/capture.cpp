@@ -97,7 +97,6 @@ void acquisition::Capture::init_variables_register_to_ros() {
     region_of_interest_set_ = false;
     skip_num_ = 20;
     init_delay_ = 1;
-    master_fps_ = 20.0;
     binning_ = 1;
     SPINNAKER_GET_NEXT_IMAGE_TIMEOUT_ = 2000;
     todays_date_ = todays_date();
@@ -126,7 +125,6 @@ void acquisition::Capture::init_variables_register_to_ros() {
 
     // default flag values
 
-    MANUAL_TRIGGER_ = false;
     CAM_DIRS_CREATED_ = false;
 
     GRID_CREATED_ = false;
@@ -385,8 +383,9 @@ void acquisition::Capture::read_parameters() {
               found = true;
       }
       ROS_ASSERT_MSG(found,"Specified master cam is not in the cam_ids list!");
+
     }
-	
+
     if (nh_pvt_.getParam("utstamps", MASTER_TIMESTAMP_FOR_ALL_)){
         MASTER_TIMESTAMP_FOR_ALL_ = !MASTER_TIMESTAMP_FOR_ALL_;
         ROS_INFO("  Unique time stamps for each camera: %s",!MASTER_TIMESTAMP_FOR_ALL_?"true":"false");
@@ -462,15 +461,6 @@ void acquisition::Capture::read_parameters() {
         }
     } else ROS_WARN("  'delay' Parameter not set, using default behavior: delay=%f",init_delay_);
 
-    if (nh_pvt_.getParam("fps", master_fps_)){
-        if (master_fps_>=0) ROS_INFO("  Master cam fps set to : %0.2f",master_fps_);
-        else {
-            master_fps_=20;
-            ROS_WARN("  Provided 'fps' is not valid, using default behavior, fps=%0.2f",master_fps_);
-        }
-    }
-        else ROS_WARN("  'fps' Parameter not set, using default behavior: fps=%0.2f",master_fps_);
-
     if (nh_pvt_.getParam("exposure_time", exposure_time_)){
         if (exposure_time_ >0) ROS_INFO("  Exposure set to: %.1f",exposure_time_);
         else ROS_INFO("  'exposure_time'=%0.f, Setting autoexposure",exposure_time_);
@@ -489,7 +479,6 @@ void acquisition::Capture::read_parameters() {
         else ROS_INFO("  'target_grey_value'=%0.f, Setting AutoExposureTargetGreyValueAuto to Continuous/ auto",target_grey_value_);} 
     else ROS_WARN("  'target_grey_value' Parameter not set, using default behavior: AutoExposureTargetGreyValueAuto to auto");
 
-
     if (nh_pvt_.getParam("binning", binning_)){
         if (binning_ >0) ROS_INFO("  Binning set to: %d",binning_);
         else {
@@ -499,13 +488,13 @@ void acquisition::Capture::read_parameters() {
     } else ROS_WARN("  'binning' Parameter not set, using default behavior: Binning = %d",binning_);
 
     if (nh_pvt_.getParam("soft_framerate", soft_framerate_)){
-        if (soft_framerate_ >0) {
-            SOFT_FRAME_RATE_CTRL_=true;
-            ROS_INFO("  Using Software rate control, rate set to: %d",soft_framerate_);
-        }
-        else ROS_INFO("  'soft_framerate'=%d, software rate control set to off",soft_framerate_);
+      if (soft_framerate_ >0) {
+          SOFT_FRAME_RATE_CTRL_=true;
+          ROS_INFO("  Using Software rate control, rate set to: %d",soft_framerate_);
+      }
+      else ROS_INFO("  'soft_framerate'=%d, software rate control set to off",soft_framerate_);
     }
-    else ROS_WARN("  'soft_framerate' Parameter not set, using default behavior: No Software Rate Control ");
+    else ROS_WARN("  'soft_framerate' Parameter not set, using default behavior: No Software Rate Control ");    
 
     if (nh_pvt_.getParam("save", SAVE_)) 
         ROS_INFO("  Saving images set to: %d",SAVE_);
@@ -879,7 +868,8 @@ void acquisition::Capture::export_to_ROS() {
             else if (latest_imu_trigger_count_ - prev_imu_trigger_count_ == 0){
                 double wait_time_start = ros::Time::now().toSec();
                 ROS_WARN("Difference in trigger count zero, latest_count = %d and prev_count = %d",latest_imu_trigger_count_,prev_imu_trigger_count_);
-                while(latest_imu_trigger_count_ - prev_imu_trigger_count_ == 0){	
+                while(latest_imu_trigger_count_ - prev_imu_trigger_count_ == 0){
+                  
                     ros::Duration(0.0001).sleep();
                 }
                 ROS_INFO_STREAM("Time gap for sync messages: "<<ros::Time::now().toSec() - wait_time_start);
@@ -1065,20 +1055,17 @@ void acquisition::Capture::run_soft_trig() {
                 } else if( (key & 255)==81 ) { // LEFT ARROW
                     if (CAM_>0)
                         CAM_--;
-                } else if( (key & 255)==84 && MANUAL_TRIGGER_) { // t
-                    cams[MASTER_CAM_].trigger();
-                    get_mat_images();
                 } else if( (key & 255)==32 && !SAVE_) { // SPACE
                     ROS_INFO_STREAM("Saving frame...");
                     if (SAVE_BIN_)
                         save_binary_frames(0);
-                        else{
-                            save_mat_frames(0);
-                            if (!EXPORT_TO_ROS_){
-                                ROS_INFO_STREAM("Exporting frames to ROS...");
-                                export_to_ROS();
-                            }
+                    else{
+                        save_mat_frames(0);
+                        if (!EXPORT_TO_ROS_){
+                            ROS_INFO_STREAM("Exporting frames to ROS...");
+                            export_to_ROS();
                         }
+                    }
                 } else if( (key & 255)==27 ) {  // ESC
                     ROS_INFO_STREAM("Terminating...");
                     cvDestroyAllWindows();
@@ -1091,12 +1078,11 @@ void acquisition::Capture::run_soft_trig() {
             double disp_time_ = ros::Time::now().toSec() - t;
 
             // Call update functions
-            if (!MANUAL_TRIGGER_) {
-                if (!EXTERNAL_TRIGGER_) {
-                    cams[MASTER_CAM_].trigger();
-                }
-                get_mat_images();
+
+            if (!EXTERNAL_TRIGGER_) {
+                cams[MASTER_CAM_].trigger();
             }
+            get_mat_images();
 
             if (SAVE_) {
                 count++;
@@ -1107,7 +1093,7 @@ void acquisition::Capture::run_soft_trig() {
             }
 
             if (FIXED_NUM_FRAMES_) {
-                cout<<"Nframes "<< nframes_<<endl;
+                ROS_INFO_STREAM(" Recorded frames "<<count<<" / "<<nframes_);
                 if (count > nframes_) {
                     ROS_INFO_STREAM(nframes_ << " frames recorded. Terminating...");
                     cvDestroyAllWindows();
@@ -1133,7 +1119,8 @@ void acquisition::Capture::run_soft_trig() {
             
             achieved_time_=ros::Time::now().toSec();
             
-            if (!EXTERNAL_TRIGGER_ && SOFT_FRAME_RATE_CTRL_) {ros_rate.sleep();}
+            //if (!EXTERNAL_TRIGGER_ && SOFT_FRAME_RATE_CTRL_) {ros_rate.sleep();}
+            if (SOFT_FRAME_RATE_CTRL_) {ros_rate.sleep();}
 
         }
     }
