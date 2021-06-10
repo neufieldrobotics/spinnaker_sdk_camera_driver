@@ -1121,9 +1121,7 @@ void acquisition::Capture::run_soft_trig() {
             
             achieved_time_=ros::Time::now().toSec();
             
-            //if (!EXTERNAL_TRIGGER_ && SOFT_FRAME_RATE_CTRL_) {ros_rate.sleep();}
-            if (SOFT_FRAME_RATE_CTRL_) {ros_rate.sleep();}
-
+            if (!EXTERNAL_TRIGGER_ && SOFT_FRAME_RATE_CTRL_) {ros_rate.sleep();}
         }
     }
     catch(const std::exception &e){
