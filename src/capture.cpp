@@ -837,6 +837,7 @@ void acquisition::Capture::save_mat_frames(int dump) {
         create_cam_directories();
     
     string timestamp;
+    mesg.name.clear();
     for (unsigned int i = 0; i < numCameras_; i++) {
 
         if (dump) {
@@ -924,6 +925,7 @@ void acquisition::Capture::save_binary_frames(int dump) {
         create_cam_directories();
     
     string timestamp;
+    mesg.name.clear();
     for (unsigned int i = 0; i < numCameras_; i++) {
 
         if (dump) {
