@@ -1,6 +1,5 @@
-master: 
-[![Build Status](https://travis-ci.org/neufieldrobotics/spinnaker_sdk_camera_driver.svg?branch=master)](https://travis-ci.org/neufieldrobotics/spinnaker_sdk_camera_driver)
-dev: [![Build Status](https://travis-ci.org/neufieldrobotics/spinnaker_sdk_camera_driver.svg?branch=dev)](https://travis-ci.org/neufieldrobotics/spinnaker_sdk_camera_driver)
+master: [![Build Status](https://travis-ci.com/neufieldrobotics/spinnaker_sdk_camera_driver.svg?branch=master)](https://travis-ci.com/neufieldrobotics/spinnaker_sdk_camera_driver)
+dev: [![Build Status](https://travis-ci.com/neufieldrobotics/spinnaker_sdk_camera_driver.svg?branch=dev)](https://travis-ci.com/neufieldrobotics/spinnaker_sdk_camera_driver)
 
 # spinnaker_sdk_camera_driver
 These are the ros drivers for running the Pt Grey (FLIR) cameras that use the Spinnaker SDK.  This code has been tested with various Point Grey Blackfly S (BFS) cameras. 
