@@ -8,16 +8,16 @@ These are the ros drivers for running the Pt Grey (FLIR) cameras that use the Sp
 ## Compatibility Matrix
 | Spinnaker | Architecture | Ubnuntu 16.04 Xenial +<br>ROS Kinetic  | Ubnuntu 18.04 Bionic +<br>ROS Melodic | Ubnuntu 20.04 Focal +<br>ROS Noetic |
 |-----------|:------------:|:--------------------------------------:|:-------------------------------------:|:-----------------------------------:|
-| 1.17.0.23 | AMD64        | :heavy_check_mark:                     |:heavy_minus_sign:                     |:heavy_minus_sign:                   |
-| 1.17.0.23 | ARM64        | :heavy_check_mark:                     |:heavy_minus_sign:                     |:heavy_minus_sign:                   |
-| 1.24.0.60 | AMD64        | :heavy_check_mark:                     |:heavy_minus_sign:                     |:heavy_minus_sign:                   |
-| 1.24.0.60 | ARM64        | :heavy_check_mark:                     |:heavy_minus_sign:                     |:heavy_minus_sign:                   |
-| 2.0.0.147 | AMD64        | :heavy_check_mark:                     |:white_check_mark:                     |:heavy_minus_sign:                   |
-| 2.0.0.147 | ARM64        | :heavy_check_mark:                     |                                       |:heavy_minus_sign:                   |
-| 2.2.0.48  | AMD64        | :heavy_minus_sign:                     |:heavy_check_mark:                     |                                     |
+| 1.17.0.23 | AMD64        | :heavy_check_mark:                     | :heavy_minus_sign:                    | :heavy_minus_sign:                  |
+| 1.17.0.23 | ARM64        | :heavy_check_mark:                     | :heavy_minus_sign:                    | :heavy_minus_sign:                  |
+| 1.24.0.60 | AMD64        | :heavy_check_mark:                     | :heavy_minus_sign:                    | :heavy_minus_sign:                  |
+| 1.24.0.60 | ARM64        | :heavy_check_mark:                     | :heavy_minus_sign:                    | :heavy_minus_sign:                  |
+| 2.0.0.147 | AMD64        | :heavy_check_mark:                     | :white_check_mark:                    | :heavy_minus_sign:                  |
+| 2.0.0.147 | ARM64        | :heavy_check_mark:                     |                                       | :heavy_minus_sign:                  |
+| 2.2.0.48  | AMD64        | :heavy_minus_sign:                     | :heavy_check_mark:                    | :white_check_mark:                  |
 | 2.2.0.48  | ARM64        | :heavy_minus_sign:                     |                                       |                                     |
-| 2.3.0.77  | AMD64        | :heavy_minus_sign:                     |                                       |                                     |
-| 2.3.0.77  | ARM64        | :heavy_minus_sign:                     |                                       |                                     |
+| 2.3.0.77  | AMD64        | :heavy_minus_sign:                     |                                       | :x:                                 |
+| 2.3.0.77  | ARM64        | :heavy_minus_sign:                     | :x:                                   |                                     |
 
 :heavy_check_mark: Tested 
 :heavy_minus_sign: Not Applicable 
