@@ -338,7 +338,8 @@ void acquisition::Capture::read_parameters() {
     ROS_INFO("  Camera IDs:");
     
     std::vector<int> cam_id_vec;
-    ROS_ASSERT_MSG(nh_pvt_.getParam("cam_ids", cam_id_vec),"If cam_aliases are provided, they should be the same number as cam_ids and should correspond in order!");
+    bool const got_cam_ids = nh_pvt_.getParam("cam_ids", cam_id_vec);
+    ROS_ASSERT_MSG(got_cam_ids,"No camera IDs provided!");
     int num_ids = cam_id_vec.size();
     for (int i=0; i < num_ids; i++){
         cam_ids_.push_back(to_string(cam_id_vec[i]));
@@ -374,7 +375,8 @@ void acquisition::Capture::read_parameters() {
     int mcam_int;
 
     if (!EXTERNAL_TRIGGER_){
-      ROS_ASSERT_MSG(nh_pvt_.getParam("master_cam", mcam_int),"master_cam is required!");
+      bool const got_master_cam = nh_pvt_.getParam("master_cam", mcam_int)
+      ROS_ASSERT_MSG(got_master_cam,"master_cam is required!");
     
       master_cam_id_=to_string(mcam_int);
       bool found = false;
@@ -1019,7 +1021,8 @@ void acquisition::Capture::run_soft_trig() {
         for (unsigned int i = 0; i < numCameras_; i++) {
             //verify if binning is set successfully
             if (!region_of_interest_set_){
-                ROS_ASSERT_MSG(cams[i].verifyBinning(binning_), " Failed to set Binning= %d, could be either due to Invalid binning value, try changing binning value or due to spinnaker api bug - failing to set lower binning than previously set value - solution: unplug usb camera and re-plug it back and run to node with desired valid binning", binning_);
+		bool const binning_ok = cams[i].verifyBinning(binning_);
+                ROS_ASSERT_MSG(binning_ok, " Failed to set Binning= %d, could be either due to Invalid binning value, try changing binning value or due to spinnaker api bug - failing to set lower binning than previously set value - solution: unplug usb camera and re-plug it back and run to node with desired valid binning", binning_);
             }
             // warn if full sensor resolution is not same as calibration resolution
             cams[i].calibrationParamsTest(image_width_,image_height_);
