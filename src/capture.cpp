@@ -1021,7 +1021,7 @@ void acquisition::Capture::run_soft_trig() {
         for (unsigned int i = 0; i < numCameras_; i++) {
             //verify if binning is set successfully
             if (!region_of_interest_set_){
-		bool const binning_ok = cams[i].verifyBinning(binning_);
+                bool const binning_ok = cams[i].verifyBinning(binning_);
                 ROS_ASSERT_MSG(binning_ok, " Failed to set Binning= %d, could be either due to Invalid binning value, try changing binning value or due to spinnaker api bug - failing to set lower binning than previously set value - solution: unplug usb camera and re-plug it back and run to node with desired valid binning", binning_);
             }
             // warn if full sensor resolution is not same as calibration resolution
