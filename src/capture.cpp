@@ -375,7 +375,7 @@ void acquisition::Capture::read_parameters() {
     int mcam_int;
 
     if (!EXTERNAL_TRIGGER_){
-      bool const got_master_cam = nh_pvt_.getParam("master_cam", mcam_int)
+      bool const got_master_cam = nh_pvt_.getParam("master_cam", mcam_int);
       ROS_ASSERT_MSG(got_master_cam,"master_cam is required!");
     
       master_cam_id_=to_string(mcam_int);
@@ -1222,7 +1222,7 @@ void acquisition::Capture::write_queue_to_disk(queue<ImagePtr>* img_q, int cam_n
             SyncInfo_ sync_info = sync_message_queue_vector_.at(cam_no).front();
             sync_info.latest_imu_trigger_count_;
             timeStamp = sync_info.latest_imu_trigger_time_.toSec() * 1e6;
-            ROS_INFO("time Queue size for cam %d is = %d",cam_no,sync_message_queue_vector_.at(cam_no).size());
+            ROS_INFO("time Queue size for cam %d is = %zd",cam_no,sync_message_queue_vector_.at(cam_no).size());
             sync_message_queue_vector_.at(cam_no).pop();
             }
             else{
@@ -1416,7 +1416,7 @@ void acquisition::Capture::dynamicReconfigureCallback(spinnaker_sdk_camera_drive
         if(first_image_received){
             for (int i = 0; i < numCameras_; i++){
                 sync_message_queue_vector_.at(i).push(sync_info);
-                ROS_DEBUG("Sync trigger added to cam: %d, length of queue: %d",i,sync_message_queue_vector_.at(i).size());
+                ROS_DEBUG("Sync trigger added to cam: %d, length of queue: %zd",i,sync_message_queue_vector_.at(i).size());
             }
         }
         //double curr_time_msg_recieved = ros::Time::now().toSec();
