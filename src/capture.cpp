@@ -338,7 +338,8 @@ void acquisition::Capture::read_parameters() {
     ROS_INFO("  Camera IDs:");
     
     std::vector<int> cam_id_vec;
-    ROS_ASSERT_MSG(nh_pvt_.getParam("cam_ids", cam_id_vec),"If cam_aliases are provided, they should be the same number as cam_ids and should correspond in order!");
+    bool const got_cam_ids = nh_pvt_.getParam("cam_ids", cam_id_vec);
+    ROS_ASSERT_MSG(got_cam_ids,"No camera IDs provided!");
     int num_ids = cam_id_vec.size();
     for (int i=0; i < num_ids; i++){
         cam_ids_.push_back(to_string(cam_id_vec[i]));
@@ -374,7 +375,8 @@ void acquisition::Capture::read_parameters() {
     int mcam_int;
 
     if (!EXTERNAL_TRIGGER_){
-      ROS_ASSERT_MSG(nh_pvt_.getParam("master_cam", mcam_int),"master_cam is required!");
+      bool const got_master_cam = nh_pvt_.getParam("master_cam", mcam_int);
+      ROS_ASSERT_MSG(got_master_cam,"master_cam is required!");
     
       master_cam_id_=to_string(mcam_int);
       bool found = false;
@@ -1019,7 +1021,8 @@ void acquisition::Capture::run_soft_trig() {
         for (unsigned int i = 0; i < numCameras_; i++) {
             //verify if binning is set successfully
             if (!region_of_interest_set_){
-                ROS_ASSERT_MSG(cams[i].verifyBinning(binning_), " Failed to set Binning= %d, could be either due to Invalid binning value, try changing binning value or due to spinnaker api bug - failing to set lower binning than previously set value - solution: unplug usb camera and re-plug it back and run to node with desired valid binning", binning_);
+                bool const binning_ok = cams[i].verifyBinning(binning_);
+                ROS_ASSERT_MSG(binning_ok, " Failed to set Binning= %d, could be either due to Invalid binning value, try changing binning value or due to spinnaker api bug - failing to set lower binning than previously set value - solution: unplug usb camera and re-plug it back and run to node with desired valid binning", binning_);
             }
             // warn if full sensor resolution is not same as calibration resolution
             cams[i].calibrationParamsTest(image_width_,image_height_);
@@ -1219,7 +1222,7 @@ void acquisition::Capture::write_queue_to_disk(queue<ImagePtr>* img_q, int cam_n
             SyncInfo_ sync_info = sync_message_queue_vector_.at(cam_no).front();
             sync_info.latest_imu_trigger_count_;
             timeStamp = sync_info.latest_imu_trigger_time_.toSec() * 1e6;
-            ROS_INFO("time Queue size for cam %d is = %d",cam_no,sync_message_queue_vector_.at(cam_no).size());
+            ROS_INFO("time Queue size for cam %d is = %zd",cam_no,sync_message_queue_vector_.at(cam_no).size());
             sync_message_queue_vector_.at(cam_no).pop();
             }
             else{
@@ -1413,7 +1416,7 @@ void acquisition::Capture::dynamicReconfigureCallback(spinnaker_sdk_camera_drive
         if(first_image_received){
             for (int i = 0; i < numCameras_; i++){
                 sync_message_queue_vector_.at(i).push(sync_info);
-                ROS_DEBUG("Sync trigger added to cam: %d, length of queue: %d",i,sync_message_queue_vector_.at(i).size());
+                ROS_DEBUG("Sync trigger added to cam: %d, length of queue: %zd",i,sync_message_queue_vector_.at(i).size());
             }
         }
         //double curr_time_msg_recieved = ros::Time::now().toSec();
