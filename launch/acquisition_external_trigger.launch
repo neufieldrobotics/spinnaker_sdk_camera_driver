@@ -24,7 +24,8 @@
   <arg name="soft_framerate"    default="30"     doc="When hybrid software triggering is used, this controls the FPS, 0=as fast as possible"/>
   <arg name="time"              default="false"  doc="Show time/FPS on output"/>
   <arg name="to_ros"            default="true"   doc="Flag whether images should be published to ROS" />
-  <arg name="utstamps"          default="false"  doc="Flag whether each image should have Unique timestamps vs the master cams time stamp for all" />
+  <arg name="utstamps"          default="false"  doc="Flag whether each image should have Unique timestamps vs the master cams time stamp for all"/>
+  <arg name="use_imu_ts"        default="true"   doc="If Trigger_msgs are present and if you dont have a timestamp info for triggering "/>
   <arg name="max_rate_save"     default="false"  doc="Flag for max rate mode which is when the master triggerst the slaves and saves images at maximum rate possible" />
 
 
@@ -63,6 +64,7 @@
     <param name="soft_framerate"    value="$(arg soft_framerate)" />
     <param name="time"              value="$(arg time)" />
     <param name="utstamps"          value="$(arg utstamps)" />
+    <param name="use_imu_ts"        value="$(arg use_imu_ts)" />
     <param name="to_ros"            value="$(arg to_ros)"/>
     <param name="max_rate_save"     value="$(arg max_rate_save)" />
     <param name="tf_prefix"         value="$(arg tf_prefix)" />

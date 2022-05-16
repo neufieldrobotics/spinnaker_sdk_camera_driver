@@ -1,14 +1,18 @@
 cam_ids:
-- 17197559
+- 17197557
+- 17197555
 cam_aliases:
 - cam0
+- cam1
 skip: 20
 delay: 1.0
 
 flip_horizontal:
 - false
+- false
 
 flip_vertical:
+- false
 - false
 
 # Assign all the follwing via launch file to prevent confusion and conflict

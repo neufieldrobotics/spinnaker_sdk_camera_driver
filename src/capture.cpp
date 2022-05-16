@@ -87,6 +87,7 @@ void acquisition::Capture::init_variables_register_to_ros() {
     TIME_BENCHMARK_ = false;
     MASTER_TIMESTAMP_FOR_ALL_ = true;
     EXTERNAL_TRIGGER_ = false;
+    USE_IMU_TS_EXTERNAL_TRIGGER_ = false;
     EXPORT_TO_ROS_ = false;
     PUBLISH_CAM_INFO_ = false;
     SAVE_ = false;
@@ -156,8 +157,8 @@ void acquisition::Capture::init_variables_register_to_ros() {
 
     #ifdef trigger_msgs_FOUND
     // initiliazing the trigger subscriber
-        if (EXTERNAL_TRIGGER_){
-            timeStamp_sub = nh_.subscribe("/imu/sync_trigger", 1000, &acquisition::Capture::assignTimeStampCallback,this);
+        if (EXTERNAL_TRIGGER_ && !USE_IMU_TS_EXTERNAL_TRIGGER_){
+            timeStamp_sub = nh_.subscribe("imu/sync_trigger", 1000, &acquisition::Capture::assignTimeStampCallback,this);
 
             for ( int i=0;i<numCameras_;i++){
                 std::queue<SyncInfo_> sync_message_queue;
@@ -362,6 +363,9 @@ void acquisition::Capture::read_parameters() {
     
     if (nh_pvt_.getParam("external_trigger", EXTERNAL_TRIGGER_)){
         ROS_INFO("  External trigger: %s",EXTERNAL_TRIGGER_?"true":"false");
+        if(nh_pvt_.getParam("use_imu_ts", USE_IMU_TS_EXTERNAL_TRIGGER_)){
+            ROS_INFO_STREAM("   External trigger, use_imu_ts "<<USE_IMU_TS_EXTERNAL_TRIGGER_);
+        }
     }
     else ROS_WARN("  'external_trigger' Parameter not set, using default behavior external_trigger=%s",EXTERNAL_TRIGGER_?"true":"false");
 
@@ -837,6 +841,7 @@ void acquisition::Capture::save_mat_frames(int dump) {
         create_cam_directories();
     
     string timestamp;
+mesg.name.clear();
     for (unsigned int i = 0; i < numCameras_; i++) {
 
         if (dump) {
@@ -852,7 +857,13 @@ void acquisition::Capture::save_mat_frames(int dump) {
                 timestamp = time_stamps_[i];
 
             ostringstream filename;
-            filename<< path_ << cam_names_[i] << "/" << timestamp << ext_;
+	filename.precision(19);
+            bool save_timestamp_hybrid = true;
+            if(save_timestamp_hybrid)
+                filename<< path_ << cam_names_[i] << "/" << mesg.header.stamp.toSec() << "_"<< timestamp << ext_;
+            else
+                filename<< path_ << cam_names_[i] << "/" << timestamp << ext_;            
+//filename<< path_ << cam_names_[i] << "/" << timestamp << ext_;
             ROS_DEBUG_STREAM("Saving image at " << filename.str());
             //ros image names 
             mesg.name.push_back(filename.str());
@@ -872,21 +883,25 @@ void acquisition::Capture::export_to_ROS() {
     
     #ifdef trigger_msgs_FOUND
         if (EXTERNAL_TRIGGER_){
-            if (latest_imu_trigger_count_ - prev_imu_trigger_count_ > 1 ){
-                ROS_WARN("Difference in trigger count more than 1, latest_count = %d and prev_count = %d",latest_imu_trigger_count_,prev_imu_trigger_count_);
-            }
-
-            else if (latest_imu_trigger_count_ - prev_imu_trigger_count_ == 0){
-                double wait_time_start = ros::Time::now().toSec();
-                ROS_WARN("Difference in trigger count zero, latest_count = %d and prev_count = %d",latest_imu_trigger_count_,prev_imu_trigger_count_);
-                while(latest_imu_trigger_count_ - prev_imu_trigger_count_ == 0){	
-                    ros::Duration(0.0001).sleep();
+            if (USE_IMU_TS_EXTERNAL_TRIGGER_){
+                if (latest_imu_trigger_count_ - prev_imu_trigger_count_ > 1 ){
+                    ROS_WARN("Difference in trigger count more than 1, latest_count = %d and prev_count = %d",latest_imu_trigger_count_,prev_imu_trigger_count_);
                 }
-                ROS_INFO_STREAM("Time gap for sync messages: "<<ros::Time::now().toSec() - wait_time_start);
+                else if (latest_imu_trigger_count_ - prev_imu_trigger_count_ == 0){
+                    double wait_time_start = ros::Time::now().toSec();
+                    ROS_WARN("Difference in trigger count zero, latest_count = %d and prev_count = %d",latest_imu_trigger_count_,prev_imu_trigger_count_);
+                    while(latest_imu_trigger_count_ - prev_imu_trigger_count_ == 0){	
+                        ros::Duration(0.0001).sleep();
+                    }
+                    ROS_INFO_STREAM("Time gap for sync messages: "<<ros::Time::now().toSec() - wait_time_start);
+                }
+                img_msg_header.stamp = latest_imu_trigger_time_;
+                prev_imu_trigger_count_ = latest_imu_trigger_count_;
             }
-            img_msg_header.stamp = latest_imu_trigger_time_;
-            prev_imu_trigger_count_ = latest_imu_trigger_count_;
-        }
+            else {
+                img_msg_header.stamp = mesg.header.stamp;
+            }
+        }   
         else {
             img_msg_header.stamp = mesg.header.stamp;
         }
@@ -1005,8 +1020,10 @@ void acquisition::Capture::run_soft_trig() {
 
     // Camera directories created at first save
     
-    if (LIVE_)namedWindow("Acquisition", CV_WINDOW_NORMAL | CV_WINDOW_KEEPRATIO);
-
+    if (LIVE_){
+        namedWindow("Acquisition", CV_WINDOW_NORMAL | CV_WINDOW_KEEPRATIO);
+        resizeWindow("Acquisition", 1280, 1080);
+    }
     int count = 0;
     
     if (!EXTERNAL_TRIGGER_) {
@@ -1050,7 +1067,7 @@ void acquisition::Capture::run_soft_trig() {
                     imshow("Acquisition", frames_[CAM_]);
                     char title[50];
                     sprintf(title, "cam # = %d, cam ID = %s, cam name = %s", CAM_, cam_ids_[CAM_].c_str(), cam_names_[CAM_].c_str());
-                    displayOverlay("Acquisition", title);
+                    //displayOverlay("Acquisition", title);
                 }
             }
 
@@ -1133,7 +1150,7 @@ void acquisition::Capture::run_soft_trig() {
             
             achieved_time_=ros::Time::now().toSec();
             
-            if (SOFT_FRAME_RATE_CTRL_) {ros_rate.sleep();}
+            if (!EXTERNAL_TRIGGER_ && SOFT_FRAME_RATE_CTRL_) {ros_rate.sleep();}
 
         }
     }
@@ -1182,7 +1199,6 @@ void acquisition::Capture::update_grid() {
 
     for (int i=0; i<cams.size(); i++)
         frames_[i].copyTo(grid_.colRange(i*frames_[i].cols,i*frames_[i].cols+frames_[i].cols).rowRange(0,grid_.rows));
-    
 }
 
 //*** CODE FOR MULTITHREADED WRITING

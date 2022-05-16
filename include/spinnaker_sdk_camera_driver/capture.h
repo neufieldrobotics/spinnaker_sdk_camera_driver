@@ -131,6 +131,7 @@ namespace acquisition {
         bool TIME_BENCHMARK_;
         bool MASTER_TIMESTAMP_FOR_ALL_;
         bool EXTERNAL_TRIGGER_;
+        bool USE_IMU_TS_EXTERNAL_TRIGGER_;
         bool SAVE_;
         bool SAVE_BIN_;
         bool MANUAL_TRIGGER_;
