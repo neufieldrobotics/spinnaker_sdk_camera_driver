@@ -6,6 +6,8 @@
   <arg name="binning"           default="1"      doc="Binning for cameras, when changing from 2 to 1 cameras need to be unplugged and replugged"/>
   <arg name="color"             default="false"  doc="Should color images be used (only works on models that support color images)"/>
   <arg name="exposure_time"     default="0"      doc="Exposure_time setting for cameras"/>
+  <arg name="utstamps"          default="false"  doc="Flag whether each image should have Unique timestamps vs the master cams time stamp for all"/>
+  <arg name="use_imu_ts"        default="true"   doc="If Trigger_msgs are present and if you dont have a timestamp info for triggering "/>
   <arg name="external_trigger"  default="true"   doc="External trigger (No camera is master)"/>
   <arg name="gain"              default="0"      doc="Gain setting. Gain should be positive (full range - 0 - 18 dB for blackfly-s camera) 
                                                       or zero (auto gain). if gain > max, it will be set to max allowed value.
@@ -24,8 +26,6 @@
   <arg name="soft_framerate"    default="30"     doc="When hybrid software triggering is used, this controls the FPS, 0=as fast as possible"/>
   <arg name="time"              default="false"  doc="Show time/FPS on output"/>
   <arg name="to_ros"            default="true"   doc="Flag whether images should be published to ROS" />
-  <arg name="utstamps"          default="false"  doc="Flag whether each image should have Unique timestamps vs the master cams time stamp for all"/>
-  <arg name="use_imu_ts"        default="true"   doc="If Trigger_msgs are present and if you dont have a timestamp info for triggering "/>
   <arg name="max_rate_save"     default="false"  doc="Flag for max rate mode which is when the master triggerst the slaves and saves images at maximum rate possible" />
 
 
@@ -51,6 +51,8 @@
     <!-- Load parameters onto server using argument or default values above -->
     <param name="exposure_time"     value="$(arg exposure_time)" />
     <param name="external_trigger"  value="$(arg external_trigger)" />
+    <param name="utstamps"          value="$(arg utstamps)" />
+    <param name="use_imu_ts"        value="$(arg use_imu_ts)" />
     <param name="gain"              value="$(arg gain)"/>
     <param name="target_grey_value" value="$(arg target_grey_value)" />
     <param name="binning"           value="$(arg binning)" />
@@ -63,8 +65,6 @@
     <param name="save_path"         value="$(arg save_path)" />
     <param name="soft_framerate"    value="$(arg soft_framerate)" />
     <param name="time"              value="$(arg time)" />
-    <param name="utstamps"          value="$(arg utstamps)" />
-    <param name="use_imu_ts"        value="$(arg use_imu_ts)" />
     <param name="to_ros"            value="$(arg to_ros)"/>
     <param name="max_rate_save"     value="$(arg max_rate_save)" />
     <param name="tf_prefix"         value="$(arg tf_prefix)" />

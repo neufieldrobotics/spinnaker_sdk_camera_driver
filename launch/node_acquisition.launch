@@ -8,6 +8,8 @@
   <arg name="color"		        default="false"	doc="Should color images be used (only works on models that support color images)"/>
   <arg name="exposure_time"     default="0" doc="Exposure_time setting for cameras"/>
   <arg name="external_trigger"  default="false"	doc="External trigger (No camera is master)"/>
+  <arg name="utstamps"          default="false"  doc="Flag whether each image should have Unique timestamps vs the master cams time stamp for all" />
+  <arg name="use_imu_ts"        default="true"   doc="If Trigger_msgs are present and if you dont have a timestamp info for triggering "/>
   <arg name="target_grey_value"   default="0"   doc="AutoExposureTargetGreyValue min: 4 max: 99 if set below 4, AutoExposureTargetGreyValueAuto will be set to continuous(auto) also available as dynamic reconfigurable parameter" />
   <arg name="frames"            default="3400"	doc="Numer of frames to save/view 0=ON"/>
   <arg name="live"              default="false"	doc="Show images on screen GUI"/>
@@ -19,7 +21,6 @@
   <arg name="soft_framerate"    default="20"	doc="When hybrid software triggering is used, this controls the FPS, 0=as fast as possible"/>
   <arg name="time"              default="false"	doc="Show time/FPS on output"/>
   <arg name="to_ros"            default="true"	doc="Flag whether images should be published to ROS" />
-  <arg name="utstamps"          default="false"	doc="Flag whether each image should have Unique timestamps vs the master cams time stamp for all" />
   <arg name="max_rate_save"     default="false"	doc="Flag for max rate mode which is when the master triggerst the slaves and saves images at maximum rate possible" />
   
   <!-- acquisiton node params-->
@@ -37,6 +38,8 @@
     <!-- Load parameters onto server using argument or default values above -->
     <param name="exposure_time"     value="$(arg exposure_time)" />
     <param name="external_trigger"  value="$(arg external_trigger)" />
+    <param name="utstamps"          value="$(arg utstamps)" />
+    <param name="use_imu_ts"        value="$(arg use_imu_ts)" />
     <param name="target_grey_value" value="$(arg target_grey_value)" />
     <param name="binning"           value="$(arg binning)" />
     <param name="color"             value="$(arg color)" />
@@ -48,7 +51,6 @@
     <param name="save_path"         value="$(arg save_path)" />
     <param name="soft_framerate"    value="$(arg soft_framerate)" />
     <param name="time"              value="$(arg time)" />
-    <param name="utstamps"          value="$(arg utstamps)" />
     <param name="to_ros"            value="$(arg to_ros)"/>
     <param name="max_rate_save"     value="$(arg max_rate_save)"/>
     <param name="tf_prefix"         value="$(arg tf_prefix)" />
