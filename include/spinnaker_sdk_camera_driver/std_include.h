@@ -6,7 +6,6 @@
 #include "SpinGenApi/SpinnakerGenApi.h"
 
 // OpenCV
-#include <cv.h>
 #include <opencv2/highgui/highgui.hpp>
 
 // ROS
