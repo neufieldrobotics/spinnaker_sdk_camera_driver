@@ -395,8 +395,29 @@ void acquisition::Capture::read_parameters() {
     
     if (nh_pvt_.getParam("color", color_)) 
         ROS_INFO("  color set to: %s",color_?"true":"false");
-        else ROS_WARN("  'color' Parameter not set, using default behavior color=%s",color_?"true":"false");
-        
+    else ROS_WARN("  'color' Parameter not set, using default behavior color=%s",color_?"true":"false");
+
+    if (nh_pvt_.getParam("pixel_format", pixel_format_)){
+        if(color_){
+            ROS_ASSERT_MSG(pixel_format_ == "BGR8" or pixel_format_ == "BayerRG8" or pixel_format_ == "BayerGR8"
+                           or pixel_format_ == "BayerGB8" or pixel_format_ == "BayerBG8"
+                           ,"If pixel_format is specified for color images it should be one of 'BGR8' or 'BayerRG8' or 'BayerGR8' or 'BayerGB8' or BayerBG8' ");
+
+        }
+        else{
+            ROS_ASSERT_MSG(pixel_format_ == "Mono8","If pixel_format is specified for Mono images it should be 'Mono8'");
+        }
+        ROS_INFO_STREAM("  Pixel format set to: %s"<< pixel_format_);
+    }
+    else{
+        if(color_)
+            pixel_format_ = "BGR8";
+        else
+            pixel_format_ = "Mono8";
+        ROS_WARN("  'pixel_format' Parameter not set, using default behavior pixel_format=%s",pixel_format_.c_str());
+    }
+
+
     if (nh_pvt_.getParam("flip_horizontal", flip_horizontal_vec_)){
         ROS_ASSERT_MSG(num_ids == flip_horizontal_vec_.size(),"If flip_horizontal flags are provided, they should be the same number as cam_ids and should correspond in order!");
         for (int i=0; i<flip_horizontal_vec_.size(); i++) {
@@ -720,10 +741,10 @@ void acquisition::Capture::init_cameras(bool soft = false) {
                 // cams[i].setIntValue("DecimationVertical", decimation_);
                 // cams[i].setFloatValue("AcquisitionFrameRate", 5.0);
 
-                if (color_)
-                        cams[i].setEnumValue("PixelFormat", "BGR8");
-                    else
-                        cams[i].setEnumValue("PixelFormat", "Mono8");
+                //if (color_)
+                cams[i].setEnumValue("PixelFormat", pixel_format_);
+                //    else
+                //        cams[i].setEnumValue("PixelFormat", "Mono8");
                 cams[i].setEnumValue("AcquisitionMode", "Continuous");
                 
                 // set only master to be software triggered

@@ -32,6 +32,7 @@ using namespace Spinnaker::GenICam;
 using namespace cv;
 using namespace std;
 
+
 namespace acquisition {
     
     class Capture : public nodelet::Nodelet {
@@ -110,6 +111,7 @@ namespace acquisition {
         int skip_num_;
         int binning_;
         bool color_;
+        string pixel_format_;
         string dump_img_;
         string ext_;
         float exposure_time_;
