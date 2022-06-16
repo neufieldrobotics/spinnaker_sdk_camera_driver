@@ -31,6 +31,7 @@ find_package(trigger_msgs)
 find_package(Spinnaker REQUIRED)
 message("spinnaker lib :   " ${Spinnaker_LIBRARIES})
 find_package(OpenCV REQUIRED)
+
 # use LibUnwind only for x86_64 or x86_32 architecture
 # do not use LibUnwind for arm architecture
 if(${CMAKE_SYSTEM_PROCESSOR} MATCHES x86_64 OR x86_32)

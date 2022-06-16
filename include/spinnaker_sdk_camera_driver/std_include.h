@@ -4,9 +4,14 @@
 // Spinnaker SDK
 #include "Spinnaker.h"
 #include "SpinGenApi/SpinnakerGenApi.h"
-
+#include "spinnaker_configure.h"
 // OpenCV
-#include <opencv2/highgui/highgui.hpp>
+#if (OPENCV_VERSION < 4)
+    #include <cv.h>
+#else
+    #include <opencv2/highgui/highgui.hpp>
+#endif
+
 
 // ROS
 #include <ros/ros.h>

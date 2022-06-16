@@ -45,6 +45,7 @@ acquisition::Capture::Capture() {
 }
 
 void acquisition::Capture::onInit() {
+    cout<<CV_VERSION_MAJOR<<endl;
     NODELET_INFO("Initializing nodelet");
     nh_ = this->getNodeHandle();
     nh_pvt_ = this->getPrivateNodeHandle();
@@ -996,8 +997,11 @@ void acquisition::Capture::run_soft_trig() {
     start_acquisition();
 
     // Camera directories created at first save
-    
+#if (OPENCV_VERSION < 4)
+    if (LIVE_)namedWindow("Acquisition", CV_WINDOW_NORMAL | CV_WINDOW_KEEPRATIO);
+#else
     if (LIVE_)namedWindow("Acquisition", WINDOW_NORMAL | WINDOW_KEEPRATIO);
+#endif
 
     int count = 0;
     
@@ -1045,8 +1049,11 @@ void acquisition::Capture::run_soft_trig() {
                     displayOverlay("Acquisition", title);
                 }
             }
-
+#if (OPENCV_VERSION < 4)
+            int key = cvWaitKey(1);
+#else
             int key = waitKey(1);
+#endif
             ROS_DEBUG_STREAM("Key press: "<<(key & 255)<<endl);
             
             if ( (key & 255)!=255 ) {
@@ -1070,7 +1077,12 @@ void acquisition::Capture::run_soft_trig() {
                     }
                 } else if( (key & 255)==27 ) {  // ESC
                     ROS_INFO_STREAM("Terminating...");
+#if (OPENCV_VERSION < 4)
+                    cvDestroyAllWindows();
+#else
                     destroyAllWindows();
+#endif
+
                     ros::shutdown();
                     break;
                 }
@@ -1098,7 +1110,11 @@ void acquisition::Capture::run_soft_trig() {
                 ROS_INFO_STREAM(" Recorded frames "<<count<<" / "<<nframes_);
                 if (count > nframes_) {
                     ROS_INFO_STREAM(nframes_ << " frames recorded. Terminating...");
+#if (OPENCV_VERSION < 4)
+                    cvDestroyAllWindows();
+#else
                     destroyAllWindows();
+#endif
                     break;
                 }
             }
