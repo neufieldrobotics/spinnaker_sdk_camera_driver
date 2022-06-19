@@ -8,6 +8,7 @@
 // OpenCV
 #if (OPENCV_VERSION < 4)
     #include <cv.h>
+    auto cvDestroyAllWindows = destroyAllWindows;
 #else
 #endif
 #include <opencv2/highgui/highgui.hpp>
@@ -46,7 +47,6 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <pwd.h>
-
 
 
 // gflags

@@ -1077,12 +1077,7 @@ void acquisition::Capture::run_soft_trig() {
                     }
                 } else if( (key & 255)==27 ) {  // ESC
                     ROS_INFO_STREAM("Terminating...");
-#if (OPENCV_VERSION < 4)
-                    cvDestroyAllWindows();
-#else
                     destroyAllWindows();
-#endif
-
                     ros::shutdown();
                     break;
                 }
