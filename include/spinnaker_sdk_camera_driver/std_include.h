@@ -8,9 +8,11 @@
 // OpenCV
 #if (OPENCV_VERSION < 4)
     #include <cv.h>
-    auto cvDestroyAllWindows = destroyAllWindows;
+    auto destroyAllWindows = cvDestroyAllWindows;
+    auto waitKey = cvWaitKey;
 #else
 #endif
+
 #include <opencv2/highgui/highgui.hpp>
 
 

@@ -1049,11 +1049,7 @@ void acquisition::Capture::run_soft_trig() {
                     displayOverlay("Acquisition", title);
                 }
             }
-#if (OPENCV_VERSION < 4)
-            int key = cvWaitKey(1);
-#else
             int key = waitKey(1);
-#endif
             ROS_DEBUG_STREAM("Key press: "<<(key & 255)<<endl);
             
             if ( (key & 255)!=255 ) {
@@ -1105,11 +1101,7 @@ void acquisition::Capture::run_soft_trig() {
                 ROS_INFO_STREAM(" Recorded frames "<<count<<" / "<<nframes_);
                 if (count > nframes_) {
                     ROS_INFO_STREAM(nframes_ << " frames recorded. Terminating...");
-#if (OPENCV_VERSION < 4)
-                    cvDestroyAllWindows();
-#else
                     destroyAllWindows();
-#endif
                     break;
                 }
             }
