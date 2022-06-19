@@ -88,14 +88,8 @@ int acquisition::Camera::get_frame_id() {
 
 Mat acquisition::Camera::grab_mat_frame() {
 
-    try{
-        ImagePtr pResultImage = grab_frame();
-        return convert_to_mat(pResultImage);
-    }
-    catch(Spinnaker::Exception &e){
-        ros::shutdown();
-    }
-
+    ImagePtr pResultImage = grab_frame();
+    return convert_to_mat(pResultImage);
 
 }
 
