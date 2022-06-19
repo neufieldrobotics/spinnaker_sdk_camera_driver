@@ -6,15 +6,10 @@
 #include "SpinGenApi/SpinnakerGenApi.h"
 #include "spinnaker_configure.h"
 // OpenCV
-#include <opencv2/highgui/highgui.hpp>
 #if (OPENCV_VERSION < 4)
     #include <cv.h>
-    auto destroyAllWindows = cvDestroyAllWindows;
-    auto waitKey = cvWaitKey;
-    auto WINDOW_NORMAL = CV_WINDOW_NORMAL;
-    auto WINDOW_KEEPRATIO = CV_WINDOW_KEEPRATIO;
 #endif
-
+#include <opencv2/highgui/highgui.hpp>
 
 // ROS
 #include <ros/ros.h>

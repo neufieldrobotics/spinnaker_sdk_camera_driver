@@ -991,6 +991,14 @@ void acquisition::Capture::get_mat_images() {
 }
 
 void acquisition::Capture::run_soft_trig() {
+    #if (OPENCV_VERSION < 4)
+        auto WINDOW_NORMAL = CV_WINDOW_NORMAL;
+        auto WINDOW_KEEPRATIO = CV_WINDOW_KEEPRATIO;
+        auto destroyAllWindows = cvDestroyAllWindows;
+        auto waitKey = cvWaitKey;
+    #endif
+
+
     achieved_time_ = ros::Time::now().toSec();
     ROS_INFO("*** ACQUISITION ***");
     
