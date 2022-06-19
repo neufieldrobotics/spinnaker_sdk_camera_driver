@@ -6,6 +6,8 @@ services:
 matrix:
   include:
    - arch: amd64
+     env : DOCKER_IMAGE=ros:noetic-perception-focal SPINNAKER_VERSION=2.6.0.160
+   - arch: amd64
      env : DOCKER_IMAGE=ros:melodic-perception-bionic SPINNAKER_VERSION=2.0.0.147
    - arch: amd64
      env : DOCKER_IMAGE=ros:kinetic-perception-xenial SPINNAKER_VERSION=2.0.0.147
@@ -18,7 +20,7 @@ matrix:
    - arch: arm64
      env : DOCKER_IMAGE=arm64v8/ros:kinetic-perception-xenial SPINNAKER_VERSION=2.0.0.147
    - arch: arm64
-     env : DOCKER_IMAGE=arm64v8/ros:melodic-perception-bionic SPINNAKER_VERSION=2.0.0.147
+     env : DOCKER_IMAGE=arm64v8/ros:melodic-perception-bionic SPINNAKER_VERSION=2.0.0.147  
 
 before_install:
 - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
