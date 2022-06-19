@@ -45,7 +45,7 @@ acquisition::Capture::Capture() {
 }
 
 void acquisition::Capture::onInit() {
-    NODELET_INFO_STREAM<<("OpenCV Version: "<<OPENCV_VERSION);
+    NODELET_INFO_STREAM<<"OpenCV Version: "<<OPENCV_VERSION;
     NODELET_INFO("Initializing nodelet");
     nh_ = this->getNodeHandle();
     nh_pvt_ = this->getPrivateNodeHandle();
