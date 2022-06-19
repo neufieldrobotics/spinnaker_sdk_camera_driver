@@ -45,6 +45,7 @@ acquisition::Capture::Capture() {
 }
 
 void acquisition::Capture::onInit() {
+    NODELET_INFO_STREAM("OpenCV Version: "<<OPENCV_VERSION);
     NODELET_INFO("Initializing nodelet");
     nh_ = this->getNodeHandle();
     nh_pvt_ = this->getPrivateNodeHandle();
@@ -957,25 +958,29 @@ void acquisition::Capture::get_mat_images() {
     int frameID;
     int fid_mismatch = 0;
    
+    try{    
+        for (int i=0; i<numCameras_; i++) {
+            //ROS_INFO_STREAM("CAM ID IS "<< i);
+            frames_[i] = cams[i].grab_mat_frame();
+            //ROS_INFO("sucess");
+            time_stamps_[i] = cams[i].get_time_stamp();
 
-    for (int i=0; i<numCameras_; i++) {
-        //ROS_INFO_STREAM("CAM ID IS "<< i);
-        frames_[i] = cams[i].grab_mat_frame();
-        //ROS_INFO("sucess");
-        time_stamps_[i] = cams[i].get_time_stamp();
 
-
-        if (i==0)
-            frameID = cams[i].get_frame_id();
-        else
-            if (cams[i].get_frame_id() != frameID)
-                fid_mismatch = 1;
-        
-        if (i == numCameras_-1)
-            ss << cams[i].get_frame_id() << "]";
-        else
-            ss << cams[i].get_frame_id() << ", ";
-        
+            if (i==0)
+                frameID = cams[i].get_frame_id();
+            else
+                if (cams[i].get_frame_id() != frameID)
+                    fid_mismatch = 1;
+            
+            if (i == numCameras_-1)
+                ss << cams[i].get_frame_id() << "]";
+            else
+                ss << cams[i].get_frame_id() << ", ";
+            
+        }
+    }
+    catch(Spinnaker::Exception &e){
+        ros::shutdown();
     }
     mesg.header.stamp = ros::Time::now();
     mesg.time = ros::Time::now();
@@ -990,14 +995,21 @@ void acquisition::Capture::get_mat_images() {
 }
 
 void acquisition::Capture::run_soft_trig() {
+    #if (OPENCV_VERSION < 4)
+        auto WINDOW_NORMAL = CV_WINDOW_NORMAL;
+        auto WINDOW_KEEPRATIO = CV_WINDOW_KEEPRATIO;
+        auto destroyAllWindows = cvDestroyAllWindows;
+        auto waitKey = cvWaitKey;
+    #endif
+
+
     achieved_time_ = ros::Time::now().toSec();
     ROS_INFO("*** ACQUISITION ***");
     
     start_acquisition();
 
     // Camera directories created at first save
-    
-    if (LIVE_)namedWindow("Acquisition", CV_WINDOW_NORMAL | CV_WINDOW_KEEPRATIO);
+    if (LIVE_)namedWindow("Acquisition", WINDOW_NORMAL | WINDOW_KEEPRATIO);
 
     int count = 0;
     
@@ -1045,8 +1057,7 @@ void acquisition::Capture::run_soft_trig() {
                     displayOverlay("Acquisition", title);
                 }
             }
-
-            int key = cvWaitKey(1);
+            int key = waitKey(1);
             ROS_DEBUG_STREAM("Key press: "<<(key & 255)<<endl);
             
             if ( (key & 255)!=255 ) {
@@ -1070,7 +1081,7 @@ void acquisition::Capture::run_soft_trig() {
                     }
                 } else if( (key & 255)==27 ) {  // ESC
                     ROS_INFO_STREAM("Terminating...");
-                    cvDestroyAllWindows();
+                    destroyAllWindows();
                     ros::shutdown();
                     break;
                 }
@@ -1098,7 +1109,7 @@ void acquisition::Capture::run_soft_trig() {
                 ROS_INFO_STREAM(" Recorded frames "<<count<<" / "<<nframes_);
                 if (count > nframes_) {
                     ROS_INFO_STREAM(nframes_ << " frames recorded. Terminating...");
-                    cvDestroyAllWindows();
+                    destroyAllWindows();
                     break;
                 }
             }

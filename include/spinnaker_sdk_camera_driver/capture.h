@@ -4,7 +4,6 @@
 #include "std_include.h"
 #include "serialization.h"
 #include "camera.h"
-#include "spinnaker_configure.h"
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/filesystem.hpp>
 //ROS
