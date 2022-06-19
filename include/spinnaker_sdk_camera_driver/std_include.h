@@ -9,8 +9,8 @@
 #if (OPENCV_VERSION < 4)
     #include <cv.h>
 #else
-    #include <opencv2/highgui/highgui.hpp>
 #endif
+#include <opencv2/highgui/highgui.hpp>
 
 
 // ROS
