@@ -45,7 +45,7 @@ acquisition::Capture::Capture() {
 }
 
 void acquisition::Capture::onInit() {
-    cout<<CV_VERSION_MAJOR<<endl;
+    NODELET_INFO_STREAM<<("OpenCV Version: "<<OPENCV_VERSION);
     NODELET_INFO("Initializing nodelet");
     nh_ = this->getNodeHandle();
     nh_pvt_ = this->getPrivateNodeHandle();
@@ -958,25 +958,29 @@ void acquisition::Capture::get_mat_images() {
     int frameID;
     int fid_mismatch = 0;
    
+    try{    
+        for (int i=0; i<numCameras_; i++) {
+            //ROS_INFO_STREAM("CAM ID IS "<< i);
+            frames_[i] = cams[i].grab_mat_frame();
+            //ROS_INFO("sucess");
+            time_stamps_[i] = cams[i].get_time_stamp();
 
-    for (int i=0; i<numCameras_; i++) {
-        //ROS_INFO_STREAM("CAM ID IS "<< i);
-        frames_[i] = cams[i].grab_mat_frame();
-        //ROS_INFO("sucess");
-        time_stamps_[i] = cams[i].get_time_stamp();
 
-
-        if (i==0)
-            frameID = cams[i].get_frame_id();
-        else
-            if (cams[i].get_frame_id() != frameID)
-                fid_mismatch = 1;
-        
-        if (i == numCameras_-1)
-            ss << cams[i].get_frame_id() << "]";
-        else
-            ss << cams[i].get_frame_id() << ", ";
-        
+            if (i==0)
+                frameID = cams[i].get_frame_id();
+            else
+                if (cams[i].get_frame_id() != frameID)
+                    fid_mismatch = 1;
+            
+            if (i == numCameras_-1)
+                ss << cams[i].get_frame_id() << "]";
+            else
+                ss << cams[i].get_frame_id() << ", ";
+            
+        }
+    }
+    catch(Spinnaker::Exception &e){
+        ros::shutdown();
     }
     mesg.header.stamp = ros::Time::now();
     mesg.time = ros::Time::now();
