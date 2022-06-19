@@ -10,7 +10,8 @@
     #include <cv.h>
     auto destroyAllWindows = cvDestroyAllWindows;
     auto waitKey = cvWaitKey;
-#else
+    auto WINDOW_NORMAL = CV_WINDOW_NORMAL;
+    auto WINDOW_KEEPRATIO = CV_WINDOW_KEEPRATIO;
 #endif
 
 #include <opencv2/highgui/highgui.hpp>

@@ -997,11 +997,7 @@ void acquisition::Capture::run_soft_trig() {
     start_acquisition();
 
     // Camera directories created at first save
-#if (OPENCV_VERSION < 4)
-    if (LIVE_)namedWindow("Acquisition", CV_WINDOW_NORMAL | CV_WINDOW_KEEPRATIO);
-#else
     if (LIVE_)namedWindow("Acquisition", WINDOW_NORMAL | WINDOW_KEEPRATIO);
-#endif
 
     int count = 0;
     
