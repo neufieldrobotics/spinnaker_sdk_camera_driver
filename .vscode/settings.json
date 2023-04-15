@@ -1,0 +1,16 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/fredlyu/driver/ws_spinnaker/devel/lib/python3/dist-packages",
+        "/home/fredlyu/driver/ws_orbbec/devel/lib/python3/dist-packages",
+        "/home/fredlyu/slam/ws_livox_ros_driver_for_r3live/devel/lib/python3/dist-packages",
+        "/home/fredlyu/slam/ws_kalibr/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/fredlyu/driver/ws_spinnaker/devel/lib/python3/dist-packages",
+        "/home/fredlyu/driver/ws_orbbec/devel/lib/python3/dist-packages",
+        "/home/fredlyu/slam/ws_livox_ros_driver_for_r3live/devel/lib/python3/dist-packages",
+        "/home/fredlyu/slam/ws_kalibr/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ]
+}
