@@ -1,3 +1,12 @@
+适配了Ubuntu20.04以及Opencv3以上版本；该仓库所用SpinnakerSDK版本为3.0.0.118
+主要修改了以下部分：
+ - opencv: cv.h -> opencv2.opencv.hpp
+ - opencv: cvDestroyAllWindows -> destroyAllWindows()
+ - opencv: CV_WINDOW_NORMAL -> WINDOW_NORMAL
+ - opencv: CV_WINDOW_KEEPRATIO -> WINDOW_KEEPRATIO
+ - spinnakerSDK: ImagePtr::Convert() -> ImageProcessor::Convert()
+ - 修改了硬触发外部通道: Line3 -> Line0(Opto-isolated input)(capture.cpp:748-749)
+------------------------------------------------------------------------------
 master: 
 [![Build Status](https://travis-ci.org/neufieldrobotics/spinnaker_sdk_camera_driver.svg?branch=master)](https://travis-ci.org/neufieldrobotics/spinnaker_sdk_camera_driver)
 dev: [![Build Status](https://travis-ci.org/neufieldrobotics/spinnaker_sdk_camera_driver.svg?branch=dev)](https://travis-ci.org/neufieldrobotics/spinnaker_sdk_camera_driver)

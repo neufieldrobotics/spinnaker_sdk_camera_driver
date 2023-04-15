@@ -4,7 +4,7 @@
 
   <!-- acquisition spinnaker params-->
   <arg name="binning"           default="1"      doc="Binning for cameras, when changing from 2 to 1 cameras need to be unplugged and replugged"/>
-  <arg name="color"             default="false"  doc="Should color images be used (only works on models that support color images)"/>
+  <arg name="color"             default="true"  doc="Should color images be used (only works on models that support color images)"/>
   <arg name="exposure_time"     default="0"      doc="Exposure_time setting for cameras"/>
   <arg name="external_trigger"  default="true"   doc="External trigger (No camera is master)"/>
   <arg name="gain"              default="0"      doc="Gain setting. Gain should be positive (full range - 0 - 18 dB for blackfly-s camera) 
