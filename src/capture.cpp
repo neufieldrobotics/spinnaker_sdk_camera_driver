@@ -745,8 +745,8 @@ void acquisition::Capture::init_cameras(bool soft = false) {
                         // in master slave setup. Also in the mode when another sensor such as IMU triggers 
                         // the camera
                     cams[i].setEnumValue("TriggerMode", "On");
-                    cams[i].setEnumValue("LineSelector", "Line3");
-                    cams[i].setEnumValue("TriggerSource", "Line3");
+                    cams[i].setEnumValue("LineSelector", "Line0");
+                    cams[i].setEnumValue("TriggerSource", "Line0");
                     cams[i].setEnumValue("TriggerSelector", "FrameStart");
                     cams[i].setEnumValue("LineMode", "Input");
                     

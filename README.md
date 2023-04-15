@@ -5,6 +5,7 @@
  - opencv: CV_WINDOW_NORMAL -> WINDOW_NORMAL
  - opencv: CV_WINDOW_KEEPRATIO -> WINDOW_KEEPRATIO
  - spinnakerSDK: ImagePtr::Convert() -> ImageProcessor::Convert()
+ - 修改了硬触发外部通道: Line3 -> Line0(Opto-isolated input)(capture.cpp:748-749)
 ------------------------------------------------------------------------------
 master: 
 [![Build Status](https://travis-ci.org/neufieldrobotics/spinnaker_sdk_camera_driver.svg?branch=master)](https://travis-ci.org/neufieldrobotics/spinnaker_sdk_camera_driver)
